@@ -662,7 +662,6 @@
         }
       });
     }
-    }
     
     // 点击模态框外部关闭
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
