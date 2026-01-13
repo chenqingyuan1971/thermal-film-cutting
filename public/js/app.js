@@ -292,8 +292,6 @@
         method: 'DELETE',
         credentials: 'same-origin'
       });
-        method: 'DELETE'
-      });
       
       const data = await response.json();
       
