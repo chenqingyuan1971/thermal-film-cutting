@@ -148,6 +148,39 @@
     }
   }
 
+  // 从项目数据中解析统计信息
+  function parseStatsFromProjectData(projectData) {
+    const stats = {
+      products: [],
+      glassArea: 0,
+      filmArea: 0
+    };
+    
+    if (!projectData) return stats;
+    
+    const glasses = projectData.glasses || [];
+    const optimizationResult = projectData.optimizationResult;
+    
+    // 计算玻璃总面积
+    stats.glassArea = glasses.reduce((sum, g) => {
+      return sum + (g.width * g.height * g.quantity);
+    }, 0);
+    stats.glassArea = stats.glassArea / 1000000; // 转换为平方米
+    
+    // 收集所有使用的产品
+    const productsSet = new Set(glasses.map(g => g.product));
+    stats.products = Array.from(productsSet);
+    
+    // 如果有优化结果，计算膜材面积
+    if (optimizationResult && optimizationResult.segments) {
+      const FILM_WIDTH = 1520; // 膜材宽度
+      const totalLength = optimizationResult.segments.reduce((sum, seg) => sum + seg.length, 0);
+      stats.filmArea = (FILM_WIDTH * totalLength) / 1000000; // 转换为平方米
+    }
+    
+    return stats;
+  }
+
   // 渲染项目列表
   function renderProjectList(projects) {
     const listContainer = document.getElementById('projectListContainer');
@@ -168,49 +201,38 @@
     listContainer.innerHTML = `
       <div class="grid gap-4">
         ${projects.map(project => {
-          // 尝试从project_data中解析统计数据
-          let statsHtml = '';
+          // 从保存的project_data中解析统计信息
+          let stats = null;
+          let projectData = null;
           try {
             if (project.project_data) {
-              const data = typeof project.project_data === 'string' 
+              projectData = typeof project.project_data === 'string' 
                 ? JSON.parse(project.project_data) 
                 : project.project_data;
-              
-              // 获取产品信息
-              const products = data.glasses 
-                ? [...new Set(data.glasses.map(g => g.product))].join('、') 
-                : '-';
-              
-              // 获取玻璃总面积
-              const glassArea = data.glasses 
-                ? (data.glasses.reduce((sum, g) => sum + (g.width * g.height * (g.quantity || 1)), 0) / 1000000).toFixed(2)
-                : '0.00';
-              
-              // 获取膜材总面积
-              let filmArea = '0.00';
-              if (data.optimizationResult) {
-                const totalLength = data.optimizationResult.totalLength || 0;
-                filmArea = ((totalLength * 1520) / 1000000).toFixed(2); // 假设膜宽1520mm
-              }
-              
-              statsHtml = `
-                <div class="mt-2 p-2 bg-gray-50 rounded-lg">
-                  <div class="flex flex-wrap gap-3 text-xs">
-                    <span class="text-gray-600">
-                      <span class="font-semibold">产品：</span>${escapeHtml(products)}
-                    </span>
-                    <span class="text-gray-600">
-                      <span class="font-semibold">玻璃面积：</span>${glassArea}m²
-                    </span>
-                    <span class="text-gray-600">
-                      <span class="font-semibold">膜材面积：</span>${filmArea}m²
-                    </span>
-                  </div>
-                </div>
-              `;
+              stats = parseStatsFromProjectData(projectData);
             }
           } catch (e) {
-            console.error('解析项目统计数据失败:', e);
+            console.error('解析项目数据失败:', e);
+          }
+          
+          // 生成统计信息HTML
+          let statsHtml = '';
+          if (stats && stats.products && stats.products.length > 0) {
+            statsHtml = `
+              <div class="mt-2 p-2 bg-gray-50 rounded-lg">
+                <div class="flex flex-wrap gap-3 text-xs">
+                  <span class="text-gray-600">
+                    <span class="font-semibold">拟用产品：</span>${escapeHtml(stats.products.join('、'))}
+                  </span>
+                  <span class="text-gray-600">
+                    <span class="font-semibold">玻璃面积：</span>${stats.glassArea.toFixed(2)}m²
+                  </span>
+                  <span class="text-gray-600">
+                    <span class="font-semibold">膜材面积：</span>${stats.filmArea > 0 ? stats.filmArea.toFixed(2) + 'm²' : '未计算'}
+                  </span>
+                </div>
+              </div>
+            `;
           }
           
           return `
@@ -370,7 +392,7 @@
 
   // 收集当前项目数据
   function collectProjectData() {
-    return {
+    const data = {
       projectInfo: {
         name: document.getElementById('projectName').value,
         owner: document.getElementById('ownerName').value,
@@ -381,6 +403,13 @@
       selectedPlans: window.selectedPlans || {},
       optimizationState: window.optimizationState || null
     };
+    
+    // 保存优化结果（用于历史记录显示统计信息）
+    if (window.optimizationResult) {
+      data.optimizationResult = window.optimizationResult;
+    }
+    
+    return data;
   }
 
   // 恢复项目数据
@@ -476,37 +505,6 @@
 
   // 显示保存模态框
   function showSaveModal() {
-    const modal = document.getElementById('saveModal');
-    if (modal) {
-      // 填充项目名称 - 如果有当前项目则使用当前项目名称，否则使用表单中的项目名称
-      const saveProjectNameInput = document.getElementById('saveProjectName');
-      const currentProjectName = document.getElementById('projectName').value;
-      
-      if (AppState.currentProject?.name) {
-        // 如果有已打开的项目，使用该项目名称
-        saveProjectNameInput.value = AppState.currentProject.name;
-      } else if (currentProjectName) {
-        // 如果没有打开的项目但表单有项目名称，使用表单中的名称
-        saveProjectNameInput.value = currentProjectName;
-      } else {
-        // 都没有则清空
-        saveProjectNameInput.value = '';
-      }
-      
-      // 填充项目描述
-      const saveProjectDescInput = document.getElementById('saveProjectDescription');
-      if (AppState.currentProject?.description) {
-        saveProjectDescInput.value = AppState.currentProject.description;
-      } else {
-        saveProjectDescInput.value = '';
-      }
-      
-      modal.classList.remove('hidden');
-    }
-  }
-
-  // 显示保存模态框
-  function showSaveModal() {
     if (!AppState.isLoggedIn) {
       showNotification('请先登录后再保存项目', 'warning');
       showAuthModal('login');
@@ -517,10 +515,21 @@
     if (modal) {
       modal.classList.remove('hidden');
       
-      // 预填充项目名称
-      const projectName = document.getElementById('projectName').value;
-      document.getElementById('saveProjectName').value = projectName || '未命名项目';
-      document.getElementById('saveProjectDescription').value = '';
+      // 预填充项目名称 - 优先使用表单中的项目名称，然后是当前打开的项目名称
+      const formProjectName = document.getElementById('projectName').value;
+      const currentProjectName = AppState.currentProject?.name;
+      
+      if (formProjectName) {
+        document.getElementById('saveProjectName').value = formProjectName;
+      } else if (currentProjectName) {
+        document.getElementById('saveProjectName').value = currentProjectName;
+      } else {
+        document.getElementById('saveProjectName').value = '';
+      }
+      
+      // 预填充项目描述
+      const currentDescription = AppState.currentProject?.description;
+      document.getElementById('saveProjectDescription').value = currentDescription || '';
     }
   }
 
