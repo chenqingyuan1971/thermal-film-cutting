@@ -192,8 +192,8 @@ app.get('/api/projects', (req, res) => {
 
   try {
     const projects = db.prepare(`
-      SELECT id, name, description, created_at, updated_at 
-      FROM projects 
+      SELECT id, name, description, project_data, created_at, updated_at
+      FROM projects
       WHERE user_id = ?
       ORDER BY updated_at DESC
     `).all(req.session.userId);
