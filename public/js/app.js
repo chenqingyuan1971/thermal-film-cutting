@@ -668,11 +668,16 @@
     const saveConfirmBtn = document.getElementById('saveConfirmBtn');
     if (saveConfirmBtn) {
       saveConfirmBtn.addEventListener('click', async () => {
-        const name = document.getElementById('saveProjectName').value;
+        // 优先使用表单中的项目名称，确保保存的项目名称正确
+        const formProjectName = document.getElementById('projectName').value;
+        const saveProjectName = document.getElementById('saveProjectName').value;
+        
+        // 如果弹窗中的名称为空或与表单不同，使用表单中的名称
+        const name = (saveProjectName && saveProjectName.trim()) ? saveProjectName : formProjectName;
         const description = document.getElementById('saveProjectDescription').value;
         
-        if (!name.trim()) {
-          showNotification('请输入项目名称', 'warning');
+        if (!name || !name.trim()) {
+          showNotification('请在"项目详情"中填写项目名称后保存', 'warning');
           return;
         }
         
@@ -687,11 +692,16 @@
     const saveAndNewBtn = document.getElementById('saveAndNewBtn');
     if (saveAndNewBtn) {
       saveAndNewBtn.addEventListener('click', async () => {
-        const name = document.getElementById('saveProjectName').value;
+        // 优先使用表单中的项目名称，确保保存的项目名称正确
+        const formProjectName = document.getElementById('projectName').value;
+        const saveProjectName = document.getElementById('saveProjectName').value;
+        
+        // 如果弹窗中的名称为空或与表单不同，使用表单中的名称
+        const name = (saveProjectName && saveProjectName.trim()) ? saveProjectName : formProjectName;
         const description = document.getElementById('saveProjectDescription').value;
         
-        if (!name.trim()) {
-          showNotification('请输入项目名称', 'warning');
+        if (!name || !name.trim()) {
+          showNotification('请在"项目详情"中填写项目名称后保存', 'warning');
           return;
         }
         
