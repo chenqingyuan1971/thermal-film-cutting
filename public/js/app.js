@@ -372,8 +372,14 @@
       // 切换到指定标签
       const loginTab = document.getElementById('loginTab');
       const registerTab = document.getElementById('registerTab');
-      const loginForm = document.getElementById('loginForm');
-      const registerForm = document.getElementById('registerForm');
+      const loginForm = document.getElementById('loginFormElement');
+      const registerForm = document.getElementById('registerFormElement');
+      
+      // 确保所有元素都存在
+      if (!loginTab || !registerTab || !loginForm || !registerForm) {
+        console.error('认证模态框元素未找到');
+        return;
+      }
       
       if (tab === 'login') {
         loginTab.classList.add('border-b-2', 'border-primary-red', 'text-primary-red');
