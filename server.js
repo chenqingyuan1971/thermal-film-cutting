@@ -60,17 +60,18 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session配置 - 针对生产环境优化
+// Session配置 - 针对生产环境优化（Render.com）
 app.use(session({
   secret: '隔热膜智能裁剪系统_v3.2_安全密钥_' + Date.now(),
   resave: false,
   saveUninitialized: false,
+  name: 'sessionId',  // 设置cookie名称
   cookie: {
     secure: false,           // Render.com使用HTTP，设为false
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24小时
-    sameSite: 'lax',         // 关键：允许跨站请求时发送cookie
-    path: '/'                // 关键：设置cookie路径为根路径
+    sameSite: 'lax',         // 允许跨站请求时发送cookie
+    path: '/'                // 设置cookie路径为根路径
   }
 }));
 
