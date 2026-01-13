@@ -515,7 +515,8 @@
         e.preventDefault();
         const username = document.getElementById('registerUsername').value;
         const password = document.getElementById('registerPassword').value;
-        const email = document.getElementById('registerEmail').value;
+        // email字段为可选，如果没有则传递空字符串
+        const email = '';
         registerUser(username, password, email);
       });
     }
