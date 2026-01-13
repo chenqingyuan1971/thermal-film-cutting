@@ -70,7 +70,7 @@ app.use(session({
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24小时
     sameSite: 'lax',         // 关键：允许跨站请求时发送cookie
-    proxy: true              // 关键：允许反向代理传递session cookie
+    path: '/'                // 关键：设置cookie路径为根路径
   }
 }));
 
@@ -300,6 +300,23 @@ app.delete('/api/projects/:id', (req, res) => {
     console.error('删除项目错误:', error);
     res.status(500).json({ success: false, message: '删除失败' });
   }
+});
+
+// 添加默认路由 - 将所有路径指向 index.html（支持前端路由）
+app.get('*', (req, res, next) => {
+  // 如果请求的是 API 路由，跳过
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  
+  // 如果请求的是静态文件（CSS、JS、图片等），跳过
+  const ext = path.extname(req.path);
+  if (ext && ext !== '.html') {
+    return next();
+  }
+  
+  // 其他所有路径都返回 index.html
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // 启动服务器
