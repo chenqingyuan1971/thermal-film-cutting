@@ -3,38 +3,57 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const Database = require('better-sqlite3');
+
+console.log(`[${new Date().toISOString()}] Loading modules...`);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 初始化数据库
-const db = new Database(path.join(__dirname, 'data', 'system.db'));
+// 初始化数据库（添加错误处理）
+let db;
+try {
+  console.log(`[${new Date().toISOString()}] Initializing database...`);
+  const Database = require('better-sqlite3');
+  db = new Database(path.join(__dirname, 'data', 'system.db'));
+  console.log(`[${new Date().toISOString()}] Database initialized successfully`);
+} catch (dbError) {
+  console.error(`[${new Date().toISOString()}] Database initialization failed:`, dbError.message);
+  // 如果数据库初始化失败，使用内存数据库作为后备
+  console.log(`[${new Date().toISOString()}] Falling back to memory database`);
+  const Database = require('better-sqlite3');
+  db = new Database(':memory:');
+}
 
 // 创建数据库表
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    email TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_login DATETIME
-  );
+try {
+  console.log(`[${new Date().toISOString()}] Creating tables...`);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      email TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_login DATETIME
+    );
 
-  CREATE TABLE IF NOT EXISTS projects (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    description TEXT,
-    project_data TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-  );
+    CREATE TABLE IF NOT EXISTS projects (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      project_data TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
 
-  CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
-`);
+    CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
+  `);
+  console.log(`[${new Date().toISOString()}] Tables created successfully`);
+} catch (tableError) {
+  console.error(`[${new Date().toISOString()}] Table creation failed:`, tableError.message);
+}
 
 // 中间件配置
 app.use(express.json({ limit: '50mb' }));
