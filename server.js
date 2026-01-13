@@ -282,7 +282,8 @@ app.delete('/api/projects/:id', (req, res) => {
 });
 
 // 启动服务器
-app.listen(PORT, () => {
+const HOST = '0.0.0.0';
+app.listen(PORT, HOST, () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║     隔热膜智能裁剪优化系统 V3.2 服务器已启动               ║
@@ -290,4 +291,5 @@ app.listen(PORT, () => {
 ║     管理员邮箱: admin@example.com                           ║
 ╚═══════════════════════════════════════════════════════════╝
   `);
+  console.log(`[${new Date().toISOString()}] Server started on port ${PORT}`);
 });
