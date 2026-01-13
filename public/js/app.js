@@ -167,13 +167,60 @@
     
     listContainer.innerHTML = `
       <div class="grid gap-4">
-        ${projects.map(project => `
+        ${projects.map(project => {
+          // 尝试从project_data中解析统计数据
+          let statsHtml = '';
+          try {
+            if (project.project_data) {
+              const data = typeof project.project_data === 'string' 
+                ? JSON.parse(project.project_data) 
+                : project.project_data;
+              
+              // 获取产品信息
+              const products = data.glasses 
+                ? [...new Set(data.glasses.map(g => g.product))].join('、') 
+                : '-';
+              
+              // 获取玻璃总面积
+              const glassArea = data.glasses 
+                ? (data.glasses.reduce((sum, g) => sum + (g.width * g.height * (g.quantity || 1)), 0) / 1000000).toFixed(2)
+                : '0.00';
+              
+              // 获取膜材总面积
+              let filmArea = '0.00';
+              if (data.optimizationResult) {
+                const totalLength = data.optimizationResult.totalLength || 0;
+                filmArea = ((totalLength * 1520) / 1000000).toFixed(2); // 假设膜宽1520mm
+              }
+              
+              statsHtml = `
+                <div class="mt-2 p-2 bg-gray-50 rounded-lg">
+                  <div class="flex flex-wrap gap-3 text-xs">
+                    <span class="text-gray-600">
+                      <span class="font-semibold">产品：</span>${escapeHtml(products)}
+                    </span>
+                    <span class="text-gray-600">
+                      <span class="font-semibold">玻璃面积：</span>${glassArea}m²
+                    </span>
+                    <span class="text-gray-600">
+                      <span class="font-semibold">膜材面积：</span>${filmArea}m²
+                    </span>
+                  </div>
+                </div>
+              `;
+            }
+          } catch (e) {
+            console.error('解析项目统计数据失败:', e);
+          }
+          
+          return `
           <div class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-red-300 transition cursor-pointer project-item" data-id="${project.id}">
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
                 <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(project.name)}</h4>
                 ${project.description ? `<p class="text-sm text-gray-500 mb-2">${escapeHtml(project.description)}</p>` : ''}
-                <div class="flex items-center gap-4 text-xs text-gray-400">
+                ${statsHtml}
+                <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
                   <span>创建时间：${formatDate(project.created_at)}</span>
                   <span>更新时间：${formatDate(project.updated_at)}</span>
                 </div>
@@ -188,7 +235,7 @@
               </div>
             </div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
     `;
   }
@@ -641,6 +688,9 @@
         
         const success = await saveProject(name, description, true); // 传递true表示保存并新建
         if (success) {
+          // 关闭保存弹窗
+          closeModal('saveModal');
+          
           // 重置当前项目状态，允许创建新项目
           AppState.currentProject = null;
           AppState.projectData = null;
@@ -651,13 +701,16 @@
           document.getElementById('contactPhone').value = '';
           document.getElementById('projectAddress').value = '';
           
-          // 清空玻璃列表
+          // 清空玻璃列表和优化结果
           if (typeof clearAll === 'function') {
             clearAll();
           }
           
-          // 重新打开保存模态框，准备创建新项目
-          showSaveModal();
+          // 如果有清空优化结果的函数，也调用一下
+          if (typeof clearResults === 'function') {
+            clearResults();
+          }
+          
           showNotification('已创建新项目，请继续添加数据', 'success');
         }
       });
