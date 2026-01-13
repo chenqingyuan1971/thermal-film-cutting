@@ -22,7 +22,9 @@
   // 检查登录状态
   async function checkLoginStatus() {
     try {
-      const response = await fetch(`${API_BASE}/api/user/status`);
+      const response = await fetch(`${API_BASE}/api/user/status`, {
+        credentials: 'same-origin'
+      });
       const data = await response.json();
       
       if (data.loggedIn) {
@@ -43,6 +45,7 @@
     try {
       const response = await fetch(`${API_BASE}/api/user/register`, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, email })
       });
@@ -70,6 +73,7 @@
     try {
       const response = await fetch(`${API_BASE}/api/user/login`, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
@@ -96,7 +100,8 @@
   async function logoutUser() {
     try {
       const response = await fetch(`${API_BASE}/api/user/logout`, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'same-origin'
       });
       
       const data = await response.json();
@@ -127,7 +132,9 @@
     if (!AppState.isLoggedIn) return;
     
     try {
-      const response = await fetch(`${API_BASE}/api/projects`);
+      const response = await fetch(`${API_BASE}/api/projects`, {
+        credentials: 'same-origin'
+      });
       const data = await response.json();
       
       if (data.success) {
@@ -199,6 +206,7 @@
     try {
       const response = await fetch(`${API_BASE}/api/projects/save`, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: AppState.currentProject?.id || null,
@@ -233,7 +241,9 @@
   // 打开项目
   async function openProject(projectId) {
     try {
-      const response = await fetch(`${API_BASE}/api/projects/${projectId}`);
+      const response = await fetch(`${API_BASE}/api/projects/${projectId}`, {
+        credentials: 'same-origin'
+      });
       const data = await response.json();
       
       if (data.success) {
@@ -279,6 +289,9 @@
     
     try {
       const response = await fetch(`${API_BASE}/api/projects/${projectId}`, {
+        method: 'DELETE',
+        credentials: 'same-origin'
+      });
         method: 'DELETE'
       });
       
