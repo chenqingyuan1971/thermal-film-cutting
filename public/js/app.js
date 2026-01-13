@@ -194,7 +194,7 @@
   }
 
   // 保存当前项目
-  async function saveProject(name, description) {
+  async function saveProject(name, description, isSaveAndNew = false) {
     if (!AppState.isLoggedIn) {
       showNotification('请先登录后再保存项目', 'warning');
       showAuthModal('login');
@@ -203,13 +203,16 @@
     
     const projectData = collectProjectData();
     
+    // 如果是保存并新建，清除当前项目ID以创建新项目
+    const projectId = isSaveAndNew ? null : (AppState.currentProject?.id || null);
+    
     try {
       const response = await fetch(`${API_BASE}/api/projects/save`, {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: AppState.currentProject?.id || null,
+          id: projectId,
           name: name,
           description: description,
           data: projectData
@@ -219,12 +222,21 @@
       const data = await response.json();
       
       if (data.success) {
+        // 更新当前项目状态
         AppState.currentProject = {
           id: data.id,
           name: name,
           description: description
         };
-        showNotification('项目保存成功！', 'success');
+        
+        if (isSaveAndNew) {
+          // 保存并新建时，临时清除ID以便下次保存时创建新项目
+          // 但先保留当前项目信息以便显示
+          showNotification('项目保存成功！准备创建新项目...', 'success');
+        } else {
+          showNotification('项目保存成功！', 'success');
+        }
+        
         loadProjectList();
         return true;
       } else {
@@ -417,6 +429,37 @@
 
   // 显示保存模态框
   function showSaveModal() {
+    const modal = document.getElementById('saveModal');
+    if (modal) {
+      // 填充项目名称 - 如果有当前项目则使用当前项目名称，否则使用表单中的项目名称
+      const saveProjectNameInput = document.getElementById('saveProjectName');
+      const currentProjectName = document.getElementById('projectName').value;
+      
+      if (AppState.currentProject?.name) {
+        // 如果有已打开的项目，使用该项目名称
+        saveProjectNameInput.value = AppState.currentProject.name;
+      } else if (currentProjectName) {
+        // 如果没有打开的项目但表单有项目名称，使用表单中的名称
+        saveProjectNameInput.value = currentProjectName;
+      } else {
+        // 都没有则清空
+        saveProjectNameInput.value = '';
+      }
+      
+      // 填充项目描述
+      const saveProjectDescInput = document.getElementById('saveProjectDescription');
+      if (AppState.currentProject?.description) {
+        saveProjectDescInput.value = AppState.currentProject.description;
+      } else {
+        saveProjectDescInput.value = '';
+      }
+      
+      modal.classList.remove('hidden');
+    }
+  }
+
+  // 显示保存模态框
+  function showSaveModal() {
     if (!AppState.isLoggedIn) {
       showNotification('请先登录后再保存项目', 'warning');
       showAuthModal('login');
@@ -559,12 +602,13 @@
       historyCloseBtn.addEventListener('click', () => closeModal('historyModal'));
     }
     
-    // 保存模态框
+    // 保存模态框关闭按钮
     const saveCloseBtn = document.getElementById('saveModalClose');
     if (saveCloseBtn) {
       saveCloseBtn.addEventListener('click', () => closeModal('saveModal'));
     }
     
+    // 保存按钮（保存并关闭）
     const saveConfirmBtn = document.getElementById('saveConfirmBtn');
     if (saveConfirmBtn) {
       saveConfirmBtn.addEventListener('click', async () => {
@@ -583,6 +627,43 @@
       });
     }
     
+    // 保存并新建按钮
+    const saveAndNewBtn = document.getElementById('saveAndNewBtn');
+    if (saveAndNewBtn) {
+      saveAndNewBtn.addEventListener('click', async () => {
+        const name = document.getElementById('saveProjectName').value;
+        const description = document.getElementById('saveProjectDescription').value;
+        
+        if (!name.trim()) {
+          showNotification('请输入项目名称', 'warning');
+          return;
+        }
+        
+        const success = await saveProject(name, description, true); // 传递true表示保存并新建
+        if (success) {
+          // 重置当前项目状态，允许创建新项目
+          AppState.currentProject = null;
+          AppState.projectData = null;
+          
+          // 清空表单
+          document.getElementById('projectName').value = '';
+          document.getElementById('ownerName').value = '';
+          document.getElementById('contactPhone').value = '';
+          document.getElementById('projectAddress').value = '';
+          
+          // 清空玻璃列表
+          if (typeof clearAll === 'function') {
+            clearAll();
+          }
+          
+          // 重新打开保存模态框，准备创建新项目
+          showSaveModal();
+          showNotification('已创建新项目，请继续添加数据', 'success');
+        }
+      });
+    }
+    }
+    
     // 点击模态框外部关闭
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
       overlay.addEventListener('click', function(e) {
@@ -596,7 +677,11 @@
     });
   }
 
-  // 暴露全局函数
+  // 暴露全局函数（供HTML onclick调用）
+  window.openProject = openProject;
+  window.saveProject = saveProject;
+  window.deleteProject = deleteProject;
+  
   window.AppAuth = {
     checkLoginStatus,
     showAuthModal,
