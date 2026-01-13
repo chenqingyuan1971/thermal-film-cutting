@@ -1,0 +1,27 @@
+{
+  "name": "隔热膜智能裁剪系统",
+  "version": "3.2.0",
+  "description": "玻璃隔热膜智能裁切优化系统 - 带用户登录和数据保存功能",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.6.0",
+    "body-parser": "^2.2.1",
+    "cors": "^2.8.5",
+    "express": "^4.22.1",
+    "express-session": "^1.18.2",
+    "uuid": "^9.0.1"
+  },
+  "keywords": [
+    "隔热膜",
+    "裁剪优化",
+    "智能排布"
+  ],
+  "author": "MiniMax Agent",
+  "license": "MIT"
+}
