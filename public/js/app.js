@@ -224,8 +224,13 @@
             console.error('解析项目数据失败:', e);
           }
           
-          // 优先显示project.name，如果为空则显示"未命名项目"
-          const displayName = project.name && project.name.trim() ? project.name : '未命名项目';
+          // 优先显示project.name，优先从project_data中获取项目名称
+          let displayName = project.name && project.name.trim() ? project.name : '未命名项目';
+          
+          // 如果project.name为空或为"未命名项目"，尝试从project_data中获取
+          if ((!project.name || !project.name.trim() || project.name === '未命名项目') && projectData && projectData.projectInfo && projectData.projectInfo.name) {
+            displayName = projectData.projectInfo.name;
+          }
           
           // 生成统计信息HTML
           let statsHtml = '';
@@ -286,6 +291,14 @@
     
     const projectData = collectProjectData();
     
+    // 调试：打印收集的数据
+    console.log('收集的项目数据:', {
+      name: name,
+      description: description,
+      glassesCount: projectData.glasses?.length || 0,
+      hasOptimizationResult: !!projectData.optimizationResult
+    });
+    
     // 如果是保存并新建，清除当前项目ID以创建新项目
     const projectId = isSaveAndNew ? null : (AppState.currentProject?.id || null);
     
@@ -313,8 +326,6 @@
         };
         
         if (isSaveAndNew) {
-          // 保存并新建时，临时清除ID以便下次保存时创建新项目
-          // 但先保留当前项目信息以便显示
           showNotification('项目保存成功！准备创建新项目...', 'success');
         } else {
           showNotification('项目保存成功！', 'success');
@@ -593,15 +604,18 @@
     return div.innerHTML;
   }
 
-  // 格式化日期
+  // 格式化日期（北京时区 UTC+8）
   function formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleString('zh-CN', {
+    // 转换为北京时间 (UTC+8)
+    const beijingTime = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+    return beijingTime.toLocaleString('zh-CN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
   }
 
