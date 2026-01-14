@@ -138,6 +138,7 @@
       const data = await response.json();
       
       if (data.success) {
+        console.log('加载到的项目数据:', data.projects);
         renderProjectList(data.projects);
       } else {
         showNotification(data.message || '加载项目列表失败', 'error');
@@ -153,29 +154,36 @@
     const stats = {
       products: [],
       glassArea: 0,
-      filmArea: 0
+      filmArea: 0,
+      hasData: false
     };
     
     if (!projectData) return stats;
     
     const glasses = projectData.glasses || [];
-    const optimizationResult = projectData.optimizationResult;
     
-    // 计算玻璃总面积
-    stats.glassArea = glasses.reduce((sum, g) => {
-      return sum + (g.width * g.height * g.quantity);
-    }, 0);
-    stats.glassArea = stats.glassArea / 1000000; // 转换为平方米
-    
-    // 收集所有使用的产品
-    const productsSet = new Set(glasses.map(g => g.product));
-    stats.products = Array.from(productsSet);
+    // 检查是否有玻璃数据
+    if (glasses && glasses.length > 0) {
+      stats.hasData = true;
+      
+      // 计算玻璃总面积
+      stats.glassArea = glasses.reduce((sum, g) => {
+        return sum + (g.width * g.height * g.quantity);
+      }, 0);
+      stats.glassArea = stats.glassArea / 1000000; // 转换为平方米
+      
+      // 收集所有使用的产品（过滤掉空值）
+      const productsSet = new Set(glasses.map(g => g.product).filter(p => p));
+      stats.products = Array.from(productsSet);
+    }
     
     // 如果有优化结果，计算膜材面积
-    if (optimizationResult && optimizationResult.segments) {
+    const optimizationResult = projectData.optimizationResult;
+    if (optimizationResult && optimizationResult.segments && optimizationResult.segments.length > 0) {
       const FILM_WIDTH = 1520; // 膜材宽度
       const totalLength = optimizationResult.segments.reduce((sum, seg) => sum + seg.length, 0);
       stats.filmArea = (FILM_WIDTH * totalLength) / 1000000; // 转换为平方米
+      stats.hasData = true;
     }
     
     return stats;
@@ -210,25 +218,31 @@
                 ? JSON.parse(project.project_data) 
                 : project.project_data;
               stats = parseStatsFromProjectData(projectData);
+              console.log(`项目 "${project.name}" 的统计数据:`, stats);
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
           }
           
+          // 优先显示project.name，如果为空则显示"未命名项目"
+          const displayName = project.name && project.name.trim() ? project.name : '未命名项目';
+          
           // 生成统计信息HTML
           let statsHtml = '';
-          if (stats && stats.products && stats.products.length > 0) {
+          if (stats && stats.hasData) {
+            const productsText = stats.products.length > 0 ? stats.products.join('、') : '未指定';
+            const filmAreaText = stats.filmArea > 0 ? stats.filmArea.toFixed(2) + 'm²' : '未计算';
             statsHtml = `
               <div class="mt-2 p-2 bg-gray-50 rounded-lg">
                 <div class="flex flex-wrap gap-3 text-xs">
                   <span class="text-gray-600">
-                    <span class="font-semibold">拟用产品：</span>${escapeHtml(stats.products.join('、'))}
+                    <span class="font-semibold">拟用产品：</span>${escapeHtml(productsText)}
                   </span>
                   <span class="text-gray-600">
                     <span class="font-semibold">玻璃面积：</span>${stats.glassArea.toFixed(2)}m²
                   </span>
                   <span class="text-gray-600">
-                    <span class="font-semibold">膜材面积：</span>${stats.filmArea > 0 ? stats.filmArea.toFixed(2) + 'm²' : '未计算'}
+                    <span class="font-semibold">膜材面积：</span>${filmAreaText}
                   </span>
                 </div>
               </div>
@@ -239,7 +253,7 @@
           <div class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-red-300 transition cursor-pointer project-item" data-id="${project.id}">
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
-                <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(project.name)}</h4>
+                <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
                 ${project.description ? `<p class="text-sm text-gray-500 mb-2">${escapeHtml(project.description)}</p>` : ''}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
