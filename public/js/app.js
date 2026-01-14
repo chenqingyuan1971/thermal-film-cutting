@@ -273,7 +273,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
           <div class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-red-300 transition cursor-pointer project-item" data-id="${project.id}">
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
-                <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(project.name || '未命名项目')}</h4>
+                <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
                 ${project.description ? `<p class="text-sm text-gray-500 mb-2">${escapeHtml(project.description)}</p>` : ''}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
