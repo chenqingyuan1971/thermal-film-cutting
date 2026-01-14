@@ -274,6 +274,7 @@
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
                 <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
+                <p class="text-sm text-gray-500 mb-2">渲染时的displayName: ${escapeHtml(displayName)} | projectData.projectInfo.name: ${escapeHtml(projectData?.projectInfo?.name || '空')}</p>
                 ${project.description ? `<p class="text-sm text-gray-500 mb-2">${escapeHtml(project.description)}</p>` : ''}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
