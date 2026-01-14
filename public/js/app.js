@@ -218,18 +218,28 @@
                 ? JSON.parse(project.project_data) 
                 : project.project_data;
               stats = parseStatsFromProjectData(projectData);
-              console.log(`项目 "${project.name}" 的统计数据:`, stats);
+              console.log(`项目 "${project.name}" 的解析数据:`, {
+                projectData: projectData,
+                stats: stats
+              });
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
           }
           
-          // 优先显示project.name，优先从project_data中获取项目名称
-          let displayName = project.name && project.name.trim() ? project.name : '未命名项目';
-          
-          // 如果project.name为空或为"未命名项目"，尝试从project_data中获取
-          if ((!project.name || !project.name.trim() || project.name === '未命名项目') && projectData && projectData.projectInfo && projectData.projectInfo.name) {
+          // 优先从projectData.projectInfo.name获取项目名称
+          let displayName = '';
+          if (projectData && projectData.projectInfo && projectData.projectInfo.name) {
+            // 从保存的数据中获取项目名称
             displayName = projectData.projectInfo.name;
+          } else if (project.name) {
+            // 使用数据库中的name字段
+            displayName = project.name;
+          }
+          
+          // 如果都没有，则显示"未命名项目"
+          if (!displayName || !displayName.trim()) {
+            displayName = '未命名项目';
           }
           
           // 生成统计信息HTML
