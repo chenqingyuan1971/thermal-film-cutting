@@ -228,9 +228,13 @@
           if (projectData && projectData.projectInfo && projectData.projectInfo.name) {
             // 从保存的数据中获取项目名称
             displayName = projectData.projectInfo.name;
+            console.log(`[项目名称] 使用 projectData.projectInfo.name: "${displayName}"`);
           } else if (project.name) {
             // 使用数据库中的name字段
             displayName = project.name;
+            console.log(`[项目名称] 使用 project.name: "${displayName}"`);
+          } else {
+            console.log(`[项目名称] 未找到项目名称，设为默认值`);
           }
           
           // 如果都没有，则显示"未命名项目"
@@ -264,7 +268,7 @@
           <div class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-red-300 transition cursor-pointer project-item" data-id="${project.id}">
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
-                <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
+                <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(project.name || '未命名项目')}</h4>
                 ${project.description ? `<p class="text-sm text-gray-500 mb-2">${escapeHtml(project.description)}</p>` : ''}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
