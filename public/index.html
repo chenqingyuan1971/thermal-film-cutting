@@ -1229,13 +1229,13 @@ B1	800	1000	智幕Pro30"></textarea>
         const SIGHT_LINE_MIN = 1500;
         const SIGHT_LINE_MAX = 1700;
         
-        let glasses = [];
-        let optimizationState = null;
-        let allGlassesPlans = [];
-        let selectedPlans = {};
-        let editingIndex = -1;
-        let allItems = [];
-        let placed = new Set();
+        window.glasses = [];
+        window.optimizationState = null;
+        window.allGlassesPlans = [];
+        window.selectedPlans = {};
+        window.editingIndex = -1;
+        window.allItems = [];
+        window.placed = new Set();
         
         const productNames = {
             '晨曦': '晨曦',
@@ -4078,9 +4078,9 @@ B1	800	1000	智幕Pro30"></textarea>
         }
 
         function clearAll() {
-            glasses = [];
-            selectedPlans = {};
-            editingIndex = -1;
+            window.glasses = [];
+            window.selectedPlans = {};
+            window.editingIndex = -1;
             document.getElementById('addGlassBtn').innerHTML = '➕ 添加';
             document.getElementById('addGlassBtn').className = 'flex-1 bg-primary-red btn-primary text-white font-bold py-2 px-4 rounded-lg transition';
             document.getElementById('cancelEditBtn').classList.add('hidden');
@@ -4093,13 +4093,13 @@ B1	800	1000	智幕Pro30"></textarea>
             document.getElementById('addGlassBtn').innerHTML = '➕ 添加';
             document.getElementById('addGlassBtn').className = 'flex-1 bg-primary-red btn-primary text-white font-bold py-2 px-4 rounded-lg transition';
             document.getElementById('cancelEditBtn').classList.add('hidden');
-            glasses = [
+            window.glasses = [
                 { id: 'A1', floor: '一楼', room: '客厅', windowId: 'A1', direction: '南', width: 3200, height: 2200, product: '暮语', quantity: 1 },
                 { id: 'B1', floor: '一楼', room: '卧室', windowId: 'B1', direction: '东', width: 1500, height: 2000, product: '晨曦', quantity: 2 },
                 { id: 'C1', floor: '二楼', room: '书房', windowId: 'C1', direction: '北', width: 800, height: 1000, product: '智幕Pro30', quantity: 4 },
                 { id: 'D1', floor: '二楼', room: '卧室', windowId: 'D1', direction: '西', width: 390, height: 1140, product: '晨曦', quantity: 2 }
             ];
-            selectedPlans = {};
+            window.selectedPlans = {};
             updateGlassList();
         }
 
@@ -4108,7 +4108,7 @@ B1	800	1000	智幕Pro30"></textarea>
             document.getElementById('addGlassBtn').innerHTML = '➕ 添加';
             document.getElementById('addGlassBtn').className = 'flex-1 bg-primary-red btn-primary text-white font-bold py-2 px-4 rounded-lg transition';
             document.getElementById('cancelEditBtn').classList.add('hidden');
-            glasses = [
+            window.glasses = [
                 { id: 'G1', floor: '一楼', room: '客厅', windowId: 'G1', direction: '南', width: 390, height: 1140, product: '晨曦', quantity: 4 },
                 { id: 'G2', floor: '一楼', room: '客厅', windowId: 'G2', direction: '南', width: 800, height: 570, product: '晨曦', quantity: 4 },
                 { id: 'G3', floor: '一楼', room: '餐厅', windowId: 'G3', direction: '东', width: 950, height: 1600, product: '智幕Pro30', quantity: 2 },
@@ -4118,7 +4118,7 @@ B1	800	1000	智幕Pro30"></textarea>
                 { id: 'G7', floor: '三楼', room: '书房', windowId: 'G7', direction: '东', width: 440, height: 1110, product: '晨曦', quantity: 1 },
                 { id: 'G8', floor: '三楼', room: '阳台', windowId: 'G8', direction: '西', width: 610, height: 940, product: '晨曦', quantity: 1 }
             ];
-            selectedPlans = {};
+            window.selectedPlans = {};
             updateGlassList();
         }
 
@@ -5096,13 +5096,13 @@ B1	800	1000	智幕Pro30"></textarea>
             const appendMode = document.getElementById('importAppendMode').checked;
             
             if (!appendMode) {
-                glasses = [];
-                selectedPlans = {};
+                window.glasses = [];
+                window.selectedPlans = {};
             }
             
             // 添加数据
             results.forEach(g => {
-                glasses.push(g);
+                window.glasses.push(g);
             });
             
             updateGlassList();
