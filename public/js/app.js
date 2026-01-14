@@ -1,7 +1,12 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
+ * 版本: 3.2.5 - 修复项目名称显示问题
  */
+
+// 版本号和缓存破坏器 - 强制浏览器加载最新版本
+const APP_VERSION = 'v=3.2.5_' + new Date().getTime();
+console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
   'use strict';
