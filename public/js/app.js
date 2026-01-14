@@ -209,11 +209,6 @@
     listContainer.innerHTML = `
       <div class="grid gap-4">
         ${projects.map(project => {
-          // 调试：打印原始项目数据
-          console.log(`=== 处理项目 ===`);
-          console.log(`数据库 project.name: "${project.name}"`);
-          console.log(`数据库 project.description: "${project.name === project.description ? '⚠️ 相同' : '不同'}`);
-          
           // 从保存的project_data中解析统计信息
           let stats = null;
           let projectData = null;
@@ -223,8 +218,6 @@
                 ? JSON.parse(project.project_data) 
                 : project.project_data;
               stats = parseStatsFromProjectData(projectData);
-              console.log(`projectData.projectInfo.name: "${projectData.projectInfo?.name}"`);
-              console.log(`最终 displayName 将使用: ${projectData.projectInfo?.name || project.name}`);
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
@@ -235,11 +228,9 @@
           if (projectData && projectData.projectInfo && projectData.projectInfo.name) {
             // 从保存的数据中获取项目名称
             displayName = projectData.projectInfo.name;
-            console.log(`✓ 使用 projectData.projectInfo.name: "${displayName}"`);
           } else if (project.name) {
             // 使用数据库中的name字段
             displayName = project.name;
-            console.log(`✓ 使用 project.name: "${displayName}"`);
           }
           
           // 如果都没有，则显示"未命名项目"
@@ -274,7 +265,6 @@
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
                 <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
-                <p class="text-sm text-gray-500 mb-2">渲染时的displayName: ${escapeHtml(displayName)} | projectData.projectInfo.name: ${escapeHtml(projectData?.projectInfo?.name || '空')}</p>
                 ${project.description ? `<p class="text-sm text-gray-500 mb-2">${escapeHtml(project.description)}</p>` : ''}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
