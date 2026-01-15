@@ -143,9 +143,12 @@ console.log(`[应用版本] ${APP_VERSION}`);
       });
       console.log(`[loadProjectList] response.status = ${response.status}`);
       const data = await response.json();
-      console.log(`[loadProjectList] data.success = ${data.success}, projects =`, data.projects);
+      console.log(`[loadProjectList] data =`, data);
+      console.log(`[loadProjectList] data.projects =`, data.projects);
+      console.log(`[loadProjectList] 准备调用 renderProjectList`);
       
       if (data.success) {
+        console.log(`[loadProjectList] 调用 renderProjectList，参数:`, data.projects);
         renderProjectList(data.projects);
       } else {
         showNotification(data.message || '加载项目列表失败', 'error');
@@ -200,10 +203,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
   function renderProjectList(projects) {
     const listContainer = document.getElementById('projectListContainer');
     
-    console.log(`[renderProjectList] ========== 开始执行 ==========`);
-    console.log(`[renderProjectList] 调用栈:`, new Error().stack);
-    console.log(`[renderProjectList] projects 原类型 = ${typeof projects}`);
-    console.log(`[renderProjectList] projects 原值 =`, projects);
+    console.log(`[renderProjectList] ★★★★★ 收到参数 projects =`, projects);
+    console.log(`[renderProjectList] projects === data.projects ? ${projects === '应该是data.projects的引用'}`);
     
     // 安全地将任何数据转换为数组
     let projectsArray = [];
