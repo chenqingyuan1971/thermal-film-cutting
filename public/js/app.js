@@ -134,21 +134,15 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // 加载项目列表
   async function loadProjectList() {
-    console.log(`[loadProjectList] AppState.isLoggedIn = ${AppState.isLoggedIn}`);
     if (!AppState.isLoggedIn) return;
     
     try {
       const response = await fetch(`${API_BASE}/api/projects`, {
         credentials: 'same-origin'
       });
-      console.log(`[loadProjectList] response.status = ${response.status}`);
       const data = await response.json();
-      console.log(`[loadProjectList] data =`, data);
-      console.log(`[loadProjectList] data.projects =`, data.projects);
-      console.log(`[loadProjectList] 准备调用 renderProjectList`);
       
       if (data.success) {
-        console.log(`[loadProjectList] 调用 renderProjectList，参数:`, data.projects);
         renderProjectList(data.projects);
       } else {
         showNotification(data.message || '加载项目列表失败', 'error');
@@ -202,41 +196,18 @@ console.log(`[应用版本] ${APP_VERSION}`);
   // 渲染项目列表
   function renderProjectList(projects) {
     const listContainer = document.getElementById('projectListContainer');
+    if (!listContainer) return;
     
-    console.log(`[renderProjectList] ★★★★★ 收到参数 projects =`, projects);
-    console.log(`[renderProjectList] projects === data.projects ? ${projects === '应该是data.projects的引用'}`);
-    
-    // 安全地将任何数据转换为数组
+    // 确保 projects 是数组
     let projectsArray = [];
-    
     if (Array.isArray(projects)) {
-      // 已经是数组
       projectsArray = projects;
-      console.log(`[renderProjectList] projects 已经是数组`);
     } else if (projects && typeof projects === 'object') {
-      // 是对象，尝试多种方式转换
-      if (Array.isArray(projects)) {
-        projectsArray = projects;
-      } else if (projects.length !== undefined && typeof projects.length === 'number') {
-        // 有 length 属性（类数组）
-        projectsArray = Array.from(projects);
-        console.log(`[renderProjectList] 使用 Array.from() 转换`);
-      } else if (projects[0] !== undefined || projects.length === 0) {
-        // 看起来像数组但不是（如下标访问）
-        projectsArray = Object.values(projects);
-        console.log(`[renderProjectList] 使用 Object.values() 转换`);
-      } else {
-        // 兜底：放入空数组
-        console.log(`[renderProjectList] 无法识别projects类型`);
-      }
+      projectsArray = Object.values(projects);
     }
     
-    console.log(`[renderProjectList] projectsArray 类型 = ${typeof projectsArray}`);
-    console.log(`[renderProjectList] projectsArray 是否为数组 = ${Array.isArray(projectsArray)}`);
-    console.log(`[renderProjectList] projectsArray 长度 = ${projectsArray.length}`);
-    
+    // 空项目处理
     if (projectsArray.length === 0) {
-      console.log(`[renderProjectList] 进入空项目处理`);
       listContainer.innerHTML = `
         <div class="text-center py-12 text-gray-500">
           <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,49 +220,35 @@ console.log(`[应用版本] ${APP_VERSION}`);
       return;
     }
     
-    console.log(`[renderProjectList] 准备渲染 ${projects.length} 个项目`);
-    
+    // 生成项目列表HTML
     listContainer.innerHTML = `
       <div class="grid gap-4">
-        ${projects.map(project => {
-          // 从保存的project_data中解析统计信息
+        ${projectsArray.map(project => {
+          // 解析项目数据
           let stats = null;
           let projectData = null;
+          let displayName = project.name || '未命名项目';
+          
           try {
             if (project.project_data) {
               projectData = typeof project.project_data === 'string' 
                 ? JSON.parse(project.project_data) 
                 : project.project_data;
               stats = parseStatsFromProjectData(projectData);
+              
+              // 获取项目名称（优先使用 projectInfo.name）
+              if (projectData.projectInfo && projectData.projectInfo.name) {
+                displayName = projectData.projectInfo.name;
+              }
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
           }
           
-          // 优先从projectData.projectInfo.name获取项目名称
-          let displayName = '';
-          if (projectData && projectData.projectInfo && projectData.projectInfo.name) {
-            // 从保存的数据中获取项目名称
-            displayName = projectData.projectInfo.name;
-            console.log(`[项目名称] 使用 projectData.projectInfo.name: "${displayName}"`);
-          } else if (project.name) {
-            // 使用数据库中的name字段
-            displayName = project.name;
-            console.log(`[项目名称] 使用 project.name: "${displayName}"`);
-          } else {
-            console.log(`[项目名称] 未找到项目名称，设为默认值`);
-          }
-          
-          // 如果都没有，则显示"未命名项目"
-          if (!displayName || !displayName.trim()) {
-            displayName = '未命名项目';
-          }
-          
-          // 生成统计信息HTML
+          // 生成统计信息
           let statsHtml = '';
           if (stats && stats.hasData) {
             const productsText = stats.products.length > 0 ? stats.products.join('、') : '未指定';
-            const filmAreaText = stats.filmArea > 0 ? stats.filmArea.toFixed(2) + 'm²' : '未计算';
             statsHtml = `
               <div class="mt-2 p-2 bg-gray-50 rounded-lg">
                 <div class="flex flex-wrap gap-3 text-xs">
@@ -302,7 +259,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
                     <span class="font-semibold">玻璃面积：</span>${stats.glassArea.toFixed(2)}m²
                   </span>
                   <span class="text-gray-600">
-                    <span class="font-semibold">膜材面积：</span>${filmAreaText}
+                    <span class="font-semibold">膜材面积：</span>${stats.filmArea.toFixed(2)}m²
                   </span>
                 </div>
               </div>
@@ -330,7 +287,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
               </div>
             </div>
           </div>
-        `}).join('')}
+          `;
+        }).join('')}
       </div>
     `;
   }
