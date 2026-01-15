@@ -204,30 +204,36 @@ console.log(`[应用版本] ${APP_VERSION}`);
     console.log(`[renderProjectList] projects 原类型 = ${typeof projects}`);
     console.log(`[renderProjectList] projects 原值 =`, projects);
     
-    // 确保 projects 是真正的数组
-    if (projects && typeof projects === 'object' && !Array.isArray(projects)) {
-      // 如果是对象但有 length 属性，尝试转换为数组
-      if (projects.length !== undefined) {
-        projects = Array.from(projects);
-        console.log(`[renderProjectList] 将对象转换为数组`);
+    // 安全地将任何数据转换为数组
+    let projectsArray = [];
+    
+    if (Array.isArray(projects)) {
+      // 已经是数组
+      projectsArray = projects;
+      console.log(`[renderProjectList] projects 已经是数组`);
+    } else if (projects && typeof projects === 'object') {
+      // 是对象，尝试多种方式转换
+      if (Array.isArray(projects)) {
+        projectsArray = projects;
+      } else if (projects.length !== undefined && typeof projects.length === 'number') {
+        // 有 length 属性（类数组）
+        projectsArray = Array.from(projects);
+        console.log(`[renderProjectList] 使用 Array.from() 转换`);
+      } else if (projects[0] !== undefined || projects.length === 0) {
+        // 看起来像数组但不是（如下标访问）
+        projectsArray = Object.values(projects);
+        console.log(`[renderProjectList] 使用 Object.values() 转换`);
       } else {
-        // 如果是单个对象，放入数组
-        projects = [projects];
-        console.log(`[renderProjectList] 将单个对象放入数组`);
+        // 兜底：放入空数组
+        console.log(`[renderProjectList] 无法识别projects类型`);
       }
     }
     
-    // 确保 projects 是数组
-    if (!Array.isArray(projects)) {
-      projects = [];
-      console.log(`[renderProjectList] projects 不是数组，设为空数组`);
-    }
+    console.log(`[renderProjectList] projectsArray 类型 = ${typeof projectsArray}`);
+    console.log(`[renderProjectList] projectsArray 是否为数组 = ${Array.isArray(projectsArray)}`);
+    console.log(`[renderProjectList] projectsArray 长度 = ${projectsArray.length}`);
     
-    console.log(`[renderProjectList] projects 最终类型 = ${typeof projects}`);
-    console.log(`[renderProjectList] projects 是否为数组 = ${Array.isArray(projects)}`);
-    console.log(`[renderProjectList] projects 长度 = ${projects.length}`);
-    
-    if (projects.length === 0) {
+    if (projectsArray.length === 0) {
       console.log(`[renderProjectList] 进入空项目处理`);
       listContainer.innerHTML = `
         <div class="text-center py-12 text-gray-500">
