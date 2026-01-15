@@ -200,7 +200,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
   function renderProjectList(projects) {
     const listContainer = document.getElementById('projectListContainer');
     
-    console.log(`[renderProjectList] 开始执行`);
+    console.log(`[renderProjectList] ========== 开始执行 ==========`);
+    console.log(`[renderProjectList] 调用栈:`, new Error().stack);
     console.log(`[renderProjectList] projects 原类型 = ${typeof projects}`);
     console.log(`[renderProjectList] projects 原值 =`, projects);
     
