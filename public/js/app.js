@@ -134,16 +134,18 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // 加载项目列表
   async function loadProjectList() {
+    console.log(`[loadProjectList] AppState.isLoggedIn = ${AppState.isLoggedIn}`);
     if (!AppState.isLoggedIn) return;
     
     try {
       const response = await fetch(`${API_BASE}/api/projects`, {
         credentials: 'same-origin'
       });
+      console.log(`[loadProjectList] response.status = ${response.status}`);
       const data = await response.json();
+      console.log(`[loadProjectList] data.success = ${data.success}, projects =`, data.projects);
       
       if (data.success) {
-        console.log('加载到的项目数据:', data.projects);
         renderProjectList(data.projects);
       } else {
         showNotification(data.message || '加载项目列表失败', 'error');
@@ -197,6 +199,9 @@ console.log(`[应用版本] ${APP_VERSION}`);
   // 渲染项目列表
   function renderProjectList(projects) {
     const listContainer = document.getElementById('projectListContainer');
+    
+    console.log(`[渲染项目列表] projects.length = ${projects ? projects.length : 'null/undefined'}`);
+    console.log(`[渲染项目列表] projects =`, projects);
     
     if (!projects || projects.length === 0) {
       listContainer.innerHTML = `
