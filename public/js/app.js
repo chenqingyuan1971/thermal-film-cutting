@@ -200,10 +200,13 @@ console.log(`[应用版本] ${APP_VERSION}`);
   function renderProjectList(projects) {
     const listContainer = document.getElementById('projectListContainer');
     
-    console.log(`[渲染项目列表] projects.length = ${projects ? projects.length : 'null/undefined'}`);
-    console.log(`[渲染项目列表] projects =`, projects);
+    console.log(`[renderProjectList] 开始执行`);
+    console.log(`[renderProjectList] projects 类型 = ${typeof projects}`);
+    console.log(`[renderProjectList] projects 是否为数组 = ${Array.isArray(projects)}`);
+    console.log(`[renderProjectList] projects 长度 = ${projects ? projects.length : 'projects为null/undefined'}`);
     
-    if (!projects || projects.length === 0) {
+    if (!projects || !Array.isArray(projects) || projects.length === 0) {
+      console.log(`[renderProjectList] 进入空项目处理`);
       listContainer.innerHTML = `
         <div class="text-center py-12 text-gray-500">
           <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,6 +218,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
       `;
       return;
     }
+    
+    console.log(`[renderProjectList] 准备渲染 ${projects.length} 个项目`);
     
     listContainer.innerHTML = `
       <div class="grid gap-4">
