@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.2.8 - 强制刷新缓存
+ * 版本: 3.2.9 - 添加调试日志
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.2.8_' + new Date().getTime();
+const APP_VERSION = 'v=3.2.9_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -142,6 +142,11 @@ console.log(`[应用版本] ${APP_VERSION}`);
       });
       const data = await response.json();
       
+      console.log('[loadProjectList] API响应原始数据:', data);
+      console.log('[loadProjectList] data.projects类型:', typeof data.projects);
+      console.log('[loadProjectList] data.projects值:', data.projects);
+      console.log('[loadProjectList] data.projects是否数组:', Array.isArray(data.projects));
+      
       if (data.success) {
         renderProjectList(data.projects);
       } else {
@@ -198,13 +203,24 @@ console.log(`[应用版本] ${APP_VERSION}`);
     const listContainer = document.getElementById('projectListContainer');
     if (!listContainer) return;
     
+    console.log('[renderProjectList] 接收到的projects参数类型:', typeof projects);
+    console.log('[renderProjectList] 接收到的projects值:', projects);
+    console.log('[renderProjectList] 接收到的projects是否数组:', Array.isArray(projects));
+    
     // 确保 projects 是数组
     let projectsArray = [];
     if (Array.isArray(projects)) {
       projectsArray = projects;
+      console.log('[renderProjectList] projects是数组，使用原值');
     } else if (projects && typeof projects === 'object') {
       projectsArray = Object.values(projects);
+      console.log('[renderProjectList] projects是对象，转换为数组:', projectsArray);
+    } else {
+      console.log('[renderProjectList] projects无法转换为数组，使用空数组');
     }
+    
+    console.log('[renderProjectList] 最终projectsArray长度:', projectsArray.length);
+    console.log('[renderProjectList] 最终projectsArray内容:', projectsArray);
     
     // 空项目处理
     if (projectsArray.length === 0) {
