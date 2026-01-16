@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.2.9 - 添加调试日志
+ * 版本: 3.3.0 - 添加项目名称描述调试
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.2.9_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.0_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -244,6 +244,14 @@ console.log(`[应用版本] ${APP_VERSION}`);
           let stats = null;
           let projectData = null;
           let displayName = project.name || '未命名项目';
+          let displayDescription = project.description || '';
+          
+          console.log('[renderProjectList] 项目原始数据:', {
+            id: project.id,
+            name: project.name,
+            description: project.description,
+            hasProjectData: !!project.project_data
+          });
           
           try {
             if (project.project_data) {
@@ -252,9 +260,22 @@ console.log(`[应用版本] ${APP_VERSION}`);
                 : project.project_data;
               stats = parseStatsFromProjectData(projectData);
               
+              console.log('[renderProjectList] 解析后的projectData:', {
+                hasProjectInfo: !!projectData.projectInfo,
+                projectInfoName: projectData.projectInfo?.name || '不存在',
+                projectInfoOwner: projectData.projectInfo?.owner || '不存在',
+                glassesCount: projectData.glasses?.length || 0
+              });
+              
               // 获取项目名称（优先使用 projectInfo.name）
               if (projectData.projectInfo && projectData.projectInfo.name) {
                 displayName = projectData.projectInfo.name;
+                console.log('[renderProjectList] 使用projectInfo.name:', displayName);
+              }
+              
+              // 获取项目描述（如果有）
+              if (projectData.projectInfo && projectData.projectInfo.owner) {
+                displayDescription = `业主：${projectData.projectInfo.owner}`;
               }
             }
           } catch (e) {
@@ -287,6 +308,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
                 <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
+                ${displayDescription ? `<p class="text-sm text-gray-600 mb-2">${escapeHtml(displayDescription)}</p>` : ''}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
                   <span>创建时间：${formatDate(project.created_at)}</span>
