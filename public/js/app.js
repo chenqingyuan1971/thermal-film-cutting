@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.5 - 修复保存弹窗项目名称联动
+ * 版本: 3.3.6 - 增强showSaveModal调试信息和元素检查
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.5_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.6_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -637,30 +637,49 @@ console.log(`[应用版本] ${APP_VERSION}`);
     if (modal) {
       modal.classList.remove('hidden');
       
-      // 调试日志：打印表单中的项目名称
-      const formProjectName = document.getElementById('projectName').value;
-      const currentProjectName = AppState.currentProject?.name;
+      // 获取表单元素（增加调试信息）
+      const projectNameInput = document.getElementById('projectName');
+      const saveProjectNameInput = document.getElementById('saveProjectName');
       
       console.log('[showSaveModal] 调试信息:');
+      console.log('  - projectNameInput元素:', projectNameInput);
+      console.log('  - saveProjectNameInput元素:', saveProjectNameInput);
+      
+      if (!projectNameInput) {
+        console.error('  - 错误：找不到projectName输入框元素！');
+        return;
+      }
+      if (!saveProjectNameInput) {
+        console.error('  - 错误：找不到saveProjectName输入框元素！');
+        return;
+      }
+      
+      const formProjectName = projectNameInput.value;
+      const currentProjectName = AppState.currentProject?.name;
+      
       console.log('  - 表单中的projectName值:', formProjectName);
       console.log('  - 当前项目的name:', currentProjectName);
       console.log('  - AppState.currentProject:', AppState.currentProject);
       
-      if (formProjectName) {
-        document.getElementById('saveProjectName').value = formProjectName;
-        console.log('  - 已将表单项目名称填入保存弹窗:', formProjectName);
+      // 优先使用表单中的项目名称
+      if (formProjectName && formProjectName.trim()) {
+        saveProjectNameInput.value = formProjectName.trim();
+        console.log('  - 已将表单项目名称填入保存弹窗:', formProjectName.trim());
       } else if (currentProjectName) {
-        document.getElementById('saveProjectName').value = currentProjectName;
+        saveProjectNameInput.value = currentProjectName;
         console.log('  - 已将当前项目名称填入保存弹窗:', currentProjectName);
       } else {
-        document.getElementById('saveProjectName').value = '';
+        saveProjectNameInput.value = '';
         console.log('  - 保存弹窗项目名称为空');
       }
       
       // 预填充项目描述
       const currentDescription = AppState.currentProject?.description;
-      document.getElementById('saveProjectDescription').value = currentDescription || '';
-      console.log('  - 保存弹窗项目描述:', document.getElementById('saveProjectDescription').value);
+      const saveProjectDescriptionInput = document.getElementById('saveProjectDescription');
+      if (saveProjectDescriptionInput) {
+        saveProjectDescriptionInput.value = currentDescription || '';
+        console.log('  - 保存弹窗项目描述:', saveProjectDescriptionInput.value);
+      }
     }
   }
 
