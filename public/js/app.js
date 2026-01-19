@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.3 - 修复项目名称渲染逻辑
+ * 版本: 3.3.5 - 修复保存弹窗项目名称联动
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.3_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.5_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -336,7 +336,10 @@ console.log(`[应用版本] ${APP_VERSION}`);
             `;
           }
           
-          return `
+          // 最终确认：打印即将渲染的displayName值
+          console.log(`[renderProjectList] >>> 第${index + 1}个项目准备渲染，displayName = "${displayName}"`);
+          
+          const cardHtml = `
           <div class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-red-300 transition cursor-pointer project-item" data-id="${project.id}">
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
@@ -360,6 +363,9 @@ console.log(`[应用版本] ${APP_VERSION}`);
             </div>
           </div>
           `;
+          
+          console.log(`[renderProjectList] 第${index + 1}个项目的卡片HTML中的标题: "${displayName}"`);
+          return cardHtml;
         }).join('')}
       </div>
     `;
@@ -631,21 +637,30 @@ console.log(`[应用版本] ${APP_VERSION}`);
     if (modal) {
       modal.classList.remove('hidden');
       
-      // 预填充项目名称 - 优先使用表单中的项目名称，然后是当前打开的项目名称
+      // 调试日志：打印表单中的项目名称
       const formProjectName = document.getElementById('projectName').value;
       const currentProjectName = AppState.currentProject?.name;
       
+      console.log('[showSaveModal] 调试信息:');
+      console.log('  - 表单中的projectName值:', formProjectName);
+      console.log('  - 当前项目的name:', currentProjectName);
+      console.log('  - AppState.currentProject:', AppState.currentProject);
+      
       if (formProjectName) {
         document.getElementById('saveProjectName').value = formProjectName;
+        console.log('  - 已将表单项目名称填入保存弹窗:', formProjectName);
       } else if (currentProjectName) {
         document.getElementById('saveProjectName').value = currentProjectName;
+        console.log('  - 已将当前项目名称填入保存弹窗:', currentProjectName);
       } else {
         document.getElementById('saveProjectName').value = '';
+        console.log('  - 保存弹窗项目名称为空');
       }
       
       // 预填充项目描述
       const currentDescription = AppState.currentProject?.description;
       document.getElementById('saveProjectDescription').value = currentDescription || '';
+      console.log('  - 保存弹窗项目描述:', document.getElementById('saveProjectDescription').value);
     }
   }
 
@@ -787,13 +802,27 @@ console.log(`[应用版本] ${APP_VERSION}`);
     const saveConfirmBtn = document.getElementById('saveConfirmBtn');
     if (saveConfirmBtn) {
       saveConfirmBtn.addEventListener('click', async () => {
-        // 优先使用表单中的项目名称，确保保存的项目名称正确
+        // 获取表单中的项目名称
         const formProjectName = document.getElementById('projectName').value;
+        // 获取保存弹窗中的项目名称
         const saveProjectName = document.getElementById('saveProjectName').value;
         
-        // 如果弹窗中的名称为空或与表单不同，使用表单中的名称
-        const name = (saveProjectName && saveProjectName.trim()) ? saveProjectName : formProjectName;
+        console.log('[saveConfirmBtn] 保存信息:');
+        console.log('  - 表单projectName:', formProjectName);
+        console.log('  - 弹窗saveProjectName:', saveProjectName);
+        
+        // 优先级逻辑：优先使用弹窗中的名称，如果弹窗名称为空，则使用表单中的名称
+        let name = '';
+        if (saveProjectName && saveProjectName.trim()) {
+          name = saveProjectName.trim();
+          console.log('  - 使用弹窗中的项目名称:', name);
+        } else if (formProjectName && formProjectName.trim()) {
+          name = formProjectName.trim();
+          console.log('  - 弹窗名称为空，使用表单中的项目名称:', name);
+        }
+        
         const description = document.getElementById('saveProjectDescription').value;
+        console.log('  - 项目描述:', description);
         
         if (!name || !name.trim()) {
           showNotification('请在"项目详情"中填写项目名称后保存', 'warning');
@@ -811,13 +840,27 @@ console.log(`[应用版本] ${APP_VERSION}`);
     const saveAndNewBtn = document.getElementById('saveAndNewBtn');
     if (saveAndNewBtn) {
       saveAndNewBtn.addEventListener('click', async () => {
-        // 优先使用表单中的项目名称，确保保存的项目名称正确
+        // 获取表单中的项目名称
         const formProjectName = document.getElementById('projectName').value;
+        // 获取保存弹窗中的项目名称
         const saveProjectName = document.getElementById('saveProjectName').value;
         
-        // 如果弹窗中的名称为空或与表单不同，使用表单中的名称
-        const name = (saveProjectName && saveProjectName.trim()) ? saveProjectName : formProjectName;
+        console.log('[saveAndNewBtn] 保存信息:');
+        console.log('  - 表单projectName:', formProjectName);
+        console.log('  - 弹窗saveProjectName:', saveProjectName);
+        
+        // 优先级逻辑：优先使用弹窗中的名称，如果弹窗名称为空，则使用表单中的名称
+        let name = '';
+        if (saveProjectName && saveProjectName.trim()) {
+          name = saveProjectName.trim();
+          console.log('  - 使用弹窗中的项目名称:', name);
+        } else if (formProjectName && formProjectName.trim()) {
+          name = formProjectName.trim();
+          console.log('  - 弹窗名称为空，使用表单中的项目名称:', name);
+        }
+        
         const description = document.getElementById('saveProjectDescription').value;
+        console.log('  - 项目描述:', description);
         
         if (!name || !name.trim()) {
           showNotification('请在"项目详情"中填写项目名称后保存', 'warning');
