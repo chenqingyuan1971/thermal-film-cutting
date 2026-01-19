@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.1 - 修复保存和显示项目名称
+ * 版本: 3.3.2 - 增强项目名称解析逻辑
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.1_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.2_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -260,25 +260,28 @@ console.log(`[应用版本] ${APP_VERSION}`);
                 : project.project_data;
               stats = parseStatsFromProjectData(projectData);
               
-              console.log('[renderProjectList] 解析后的projectData:', {
-                hasProjectInfo: !!projectData.projectInfo,
-                projectInfoName: projectData.projectInfo?.name || '不存在',
-                projectInfoOwner: projectData.projectInfo?.owner || '不存在',
-                glassesCount: projectData.glasses?.length || 0
-              });
+              console.log('[renderProjectList] 完整projectData结构:', JSON.stringify(projectData, null, 2));
               
-              // 获取项目名称优先级：
-              // 1. projectData.projectInfo.name (最高优先级)
-              // 2. project.name (次优先级)
-              // 3. "未命名项目" (默认)
+              // 获取项目名称优先级（从高到低）：
+              // 1. projectData.projectInfo.name (最高优先级 - 表单中的项目名称)
+              // 2. projectData.name (旧版本可能保存在这里)
+              // 3. project.name (数据库中的名称字段)
+              // 4. "未命名项目" (默认)
+              
+              // 优先级1: projectData.projectInfo.name
               if (projectData.projectInfo && projectData.projectInfo.name) {
                 displayName = projectData.projectInfo.name;
                 console.log('[renderProjectList] 使用projectInfo.name:', displayName);
               }
-              // 如果projectInfo.name不存在但project.name存在，使用project.name
+              // 优先级2: projectData.name (旧版本可能保存在这里)
+              else if (projectData.name) {
+                displayName = projectData.name;
+                console.log('[renderProjectList] projectInfo.name不存在，使用projectData.name:', displayName);
+              }
+              // 优先级3: project.name
               else if (project.name) {
                 displayName = project.name;
-                console.log('[renderProjectList] projectInfo.name不存在，使用project.name:', displayName);
+                console.log('[renderProjectList] projectData.name不存在，使用project.name:', displayName);
               }
               
               // 获取项目描述
