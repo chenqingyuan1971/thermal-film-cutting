@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.2 - 增强项目名称解析逻辑
+ * 版本: 3.3.3 - 修复项目名称渲染逻辑
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.2_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.3_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -239,18 +239,18 @@ console.log(`[应用版本] ${APP_VERSION}`);
     // 生成项目列表HTML
     listContainer.innerHTML = `
       <div class="grid gap-4">
-        ${projectsArray.map(project => {
+        ${projectsArray.map((project, index) => {
           // 解析项目数据
           let stats = null;
           let projectData = null;
           let displayName = project.name || '未命名项目';
           let displayDescription = project.description || '';
+          let projectAddress = '';
           
-          console.log('[renderProjectList] 项目原始数据:', {
+          console.log(`[renderProjectList] 处理第${index + 1}个项目:`, {
             id: project.id,
-            name: project.name,
-            description: project.description,
-            hasProjectData: !!project.project_data
+            projectName: project.name,
+            projectDescription: project.description
           });
           
           try {
@@ -260,41 +260,60 @@ console.log(`[应用版本] ${APP_VERSION}`);
                 : project.project_data;
               stats = parseStatsFromProjectData(projectData);
               
-              console.log('[renderProjectList] 完整projectData结构:', JSON.stringify(projectData, null, 2));
+              console.log(`[renderProjectList] 第${index + 1}个项目的projectData:`, {
+                hasProjectInfo: !!projectData.projectInfo,
+                projectInfoName: projectData.projectInfo?.name || '不存在',
+                projectInfoOwner: projectData.projectInfo?.owner || '不存在',
+                projectInfoAddress: projectData.projectInfo?.address || '不存在'
+              });
               
-              // 获取项目名称优先级（从高到低）：
-              // 1. projectData.projectInfo.name (最高优先级 - 表单中的项目名称)
+              // 获取项目名称（从高到低优先级）
+              // 1. projectData.projectInfo.name (表单中填写的项目名称)
               // 2. projectData.name (旧版本可能保存在这里)
               // 3. project.name (数据库中的名称字段)
               // 4. "未命名项目" (默认)
               
+              let finalDisplayName = null;
+              
               // 优先级1: projectData.projectInfo.name
-              if (projectData.projectInfo && projectData.projectInfo.name) {
-                displayName = projectData.projectInfo.name;
-                console.log('[renderProjectList] 使用projectInfo.name:', displayName);
+              if (projectData.projectInfo?.name) {
+                finalDisplayName = projectData.projectInfo.name;
+                console.log(`[renderProjectList] 第${index + 1}个: 使用projectInfo.name = "${finalDisplayName}"`);
               }
-              // 优先级2: projectData.name (旧版本可能保存在这里)
+              // 优先级2: projectData.name
               else if (projectData.name) {
-                displayName = projectData.name;
-                console.log('[renderProjectList] projectInfo.name不存在，使用projectData.name:', displayName);
+                finalDisplayName = projectData.name;
+                console.log(`[renderProjectList] 第${index + 1}个: projectInfo.name不存在，使用projectData.name = "${finalDisplayName}"`);
               }
               // 优先级3: project.name
               else if (project.name) {
-                displayName = project.name;
-                console.log('[renderProjectList] projectData.name不存在，使用project.name:', displayName);
+                finalDisplayName = project.name;
+                console.log(`[renderProjectList] 第${index + 1}个: projectData.name不存在，使用project.name = "${finalDisplayName}"`);
+              }
+              
+              // 只有在找到有效名称时才更新displayName
+              if (finalDisplayName) {
+                displayName = finalDisplayName;
+              }
+              
+              // 获取项目地址（如果有）
+              if (projectData.projectInfo?.address) {
+                projectAddress = projectData.projectInfo.address;
               }
               
               // 获取项目描述
               // 优先显示：project.description（保存对话框中的描述）> projectInfo中的业主信息
               if (project.description) {
                 displayDescription = project.description;
-              } else if (projectData.projectInfo && projectData.projectInfo.owner) {
+              } else if (projectData.projectInfo?.owner) {
                 displayDescription = `业主：${projectData.projectInfo.owner}`;
               }
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
           }
+          
+          console.log(`[renderProjectList] 第${index + 1}个项目的最终显示名称: "${displayName}"`);
           
           // 生成统计信息
           let statsHtml = '';
@@ -322,7 +341,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
             <div class="flex items-start justify-between">
               <div class="flex-1" onclick="openProject('${project.id}')">
                 <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
-                ${displayDescription ? `<p class="text-sm text-gray-600 mb-2">${escapeHtml(displayDescription)}</p>` : ''}
+                ${projectAddress ? `<p class="text-sm text-gray-500 mb-1">📍 ${escapeHtml(projectAddress)}</p>` : ''}
+                ${displayDescription ? `<p class="text-sm text-gray-600 mb-2">📝 ${escapeHtml(displayDescription)}</p>` : ''}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
                   <span>创建时间：${formatDate(project.created_at)}</span>
