@@ -309,19 +309,9 @@ app.delete('/api/projects/:id', (req, res) => {
 });
 
 // 添加默认路由 - 将所有路径指向 index.html（支持前端路由）
-app.get('*', (req, res, next) => {
-  // 如果请求的是 API 路由，跳过
-  if (req.path.startsWith('/api/')) {
-    return next();
-  }
-  
-  // 如果请求的是静态文件（CSS、JS、图片等），跳过
-  const ext = path.extname(req.path);
-  if (ext && ext !== '.html') {
-    return next();
-  }
-  
-  // 其他所有路径都返回 index.html
+// 这个路由必须在API路由之后，确保所有非API请求都返回index.html
+app.get('*', (req, res) => {
+  console.log('[路由] 捕获请求:', req.path);
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
