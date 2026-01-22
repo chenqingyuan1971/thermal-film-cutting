@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.7 - 修复刷新404问题，优化退出按钮
+ * 版本: 3.3.8 - 修复字段联动问题，全局移动端适配
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.7_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.8_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -637,49 +637,37 @@ console.log(`[应用版本] ${APP_VERSION}`);
     if (modal) {
       modal.classList.remove('hidden');
       
-      // 获取表单元素（增加调试信息）
+      // 获取表单元素
       const projectNameInput = document.getElementById('projectName');
       const saveProjectNameInput = document.getElementById('saveProjectName');
-      
-      console.log('[showSaveModal] 调试信息:');
-      console.log('  - projectNameInput元素:', projectNameInput);
-      console.log('  - saveProjectNameInput元素:', saveProjectNameInput);
-      
-      if (!projectNameInput) {
-        console.error('  - 错误：找不到projectName输入框元素！');
-        return;
-      }
-      if (!saveProjectNameInput) {
-        console.error('  - 错误：找不到saveProjectName输入框元素！');
-        return;
-      }
-      
-      const formProjectName = projectNameInput.value;
-      const currentProjectName = AppState.currentProject?.name;
-      
-      console.log('  - 表单中的projectName值:', formProjectName);
-      console.log('  - 当前项目的name:', currentProjectName);
-      console.log('  - AppState.currentProject:', AppState.currentProject);
-      
-      // 优先使用表单中的项目名称
-      if (formProjectName && formProjectName.trim()) {
-        saveProjectNameInput.value = formProjectName.trim();
-        console.log('  - 已将表单项目名称填入保存弹窗:', formProjectName.trim());
-      } else if (currentProjectName) {
-        saveProjectNameInput.value = currentProjectName;
-        console.log('  - 已将当前项目名称填入保存弹窗:', currentProjectName);
-      } else {
-        saveProjectNameInput.value = '';
-        console.log('  - 保存弹窗项目名称为空');
-      }
-      
-      // 预填充项目描述
-      const currentDescription = AppState.currentProject?.description;
       const saveProjectDescriptionInput = document.getElementById('saveProjectDescription');
-      if (saveProjectDescriptionInput) {
-        saveProjectDescriptionInput.value = currentDescription || '';
-        console.log('  - 保存弹窗项目描述:', saveProjectDescriptionInput.value);
+      
+      console.log('[showSaveModal] 开始执行');
+      console.log('  - projectNameInput:', projectNameInput ? '已找到' : '未找到');
+      console.log('  - saveProjectNameInput:', saveProjectNameInput ? '已找到' : '未找到');
+      
+      if (!projectNameInput || !saveProjectNameInput) {
+        console.error('[showSaveModal] 错误：找不到必要的表单元素');
+        return;
       }
+      
+      // 关键修复：直接读取表单当前值并立即填入
+      const formProjectName = projectNameInput.value || '';
+      const formDescription = document.getElementById('ownerName')?.value || '';
+      
+      console.log('[showSaveModal] 表单原始值:');
+      console.log('  - projectName:', formProjectName);
+      console.log('  - ownerName:', formDescription);
+      
+      // 立即填入值（不依赖AppState.currentProject）
+      saveProjectNameInput.value = formProjectName.trim();
+      if (saveProjectDescriptionInput) {
+        saveProjectDescriptionInput.value = formDescription;
+      }
+      
+      console.log('[showSaveModal] 已填入弹窗:');
+      console.log('  - saveProjectName:', saveProjectNameInput.value);
+      console.log('  - saveProjectDescription:', saveProjectDescriptionInput?.value || '(未找到)');
     }
   }
 
