@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.11 - 修复历史项目显示，项目名称和地址分开显示
+ * 版本: 3.3.12 - 添加详细调试日志，追踪项目名称保存/读取流程
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.11_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.12_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -255,17 +255,25 @@ console.log(`[应用版本] ${APP_VERSION}`);
           
           try {
             if (project.project_data) {
+              // 打印原始project_data字符串
+              console.log(`[renderProjectList] 第${index + 1}个项目的原始project_data:`);
+              console.log('  字符串长度:', project.project_data.length);
+              console.log('  前200字符:', project.project_data.substring(0, 200));
+              
+              // 解析JSON
               projectData = typeof project.project_data === 'string' 
                 ? JSON.parse(project.project_data) 
                 : project.project_data;
-              stats = parseStatsFromProjectData(projectData);
               
-              console.log(`[renderProjectList] 第${index + 1}个项目的projectData:`, {
-                hasProjectInfo: !!projectData.projectInfo,
-                projectInfoName: projectData.projectInfo?.name || '不存在',
-                projectInfoOwner: projectData.projectInfo?.owner || '不存在',
-                projectInfoAddress: projectData.projectInfo?.address || '不存在'
-              });
+              // 打印解析后的projectData
+              console.log(`[renderProjectList] 第${index + 1}个项目的解析后projectData:`);
+              console.log('  projectData结构:', Object.keys(projectData));
+              console.log('  projectInfo存在:', !!projectData.projectInfo);
+              if (projectData.projectInfo) {
+                console.log('  projectInfo内容:', JSON.stringify(projectData.projectInfo, null, 2));
+              }
+              
+              stats = parseStatsFromProjectData(projectData);
               
               // 获取项目名称（从高到低优先级）
               // 1. projectData.projectInfo.name (表单中填写的项目名称) ← 最优先
@@ -290,15 +298,14 @@ console.log(`[应用版本] ${APP_VERSION}`);
                 finalDisplayName = project.name;
                 console.log(`[renderProjectList] 第${index + 1}个: projectData.name为空，使用project.name = "${finalDisplayName}"`);
               }
-              
-              // 更新显示名称
-              if (finalDisplayName) {
-                displayName = finalDisplayName;
-              } else {
-                displayName = '未命名项目';
+              // 优先级4: 默认值
+              else {
+                finalDisplayName = '未命名项目';
                 console.log(`[renderProjectList] 第${index + 1}个: 没有任何项目名称，使用默认值`);
               }
               
+              // 更新显示名称
+              displayName = finalDisplayName;
               console.log(`[renderProjectList] 第${index + 1}个: 最终displayName = "${displayName}"`);
               
               // 获取项目地址（如果有）- 用于地址显示，不放到描述里
@@ -309,6 +316,9 @@ console.log(`[应用版本] ${APP_VERSION}`);
               // 项目描述保持为空或使用保存时填写的描述
               // 不再自动使用地址或业主信息作为描述
               // displayDescription 保持为空，让用户自己填写
+            } else {
+              console.log(`[renderProjectList] 第${index + 1}个项目没有project_data`);
+              displayName = project.name || '未命名项目';
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
@@ -382,20 +392,25 @@ console.log(`[应用版本] ${APP_VERSION}`);
     
     const projectData = collectProjectData();
     
+    // 调试：打印收集的项目数据详情
+    console.log('========== 保存项目调试 ==========');
+    console.log('1. 表单中的projectName:', document.getElementById('projectName')?.value);
+    console.log('2. collectProjectData返回:', JSON.stringify(projectData.projectInfo, null, 2));
+    console.log('3. 弹窗传入的name参数:', name);
+    console.log('4. 弹窗传入的description参数:', description);
+    
     // 确保 projectData.projectInfo.name 与保存的名称一致
     // 优先使用表单中的项目名称，如果没有则使用保存对话框中的名称
     const finalProjectName = projectData.projectInfo?.name || name;
+    console.log('5. 计算出的finalProjectName:', finalProjectName);
+    
     if (projectData.projectInfo) {
       projectData.projectInfo.name = finalProjectName;
     }
     
-    // 调试：打印收集的数据
-    console.log('收集的项目数据:', {
-      finalProjectName: finalProjectName,
-      description: description,
-      glassesCount: projectData.glasses?.length || 0,
-      hasOptimizationResult: !!projectData.optimizationResult
-    });
+    // 调试：打印最终要保存的数据
+    console.log('6. 最终要保存的projectData:', JSON.stringify(projectData, null, 2));
+    console.log('===================================');
     
     // 如果是保存并新建，清除当前项目ID以创建新项目
     const projectId = isSaveAndNew ? null : (AppState.currentProject?.id || null);
