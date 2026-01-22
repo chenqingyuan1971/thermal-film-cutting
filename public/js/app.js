@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.9 - 修复历史项目显示问题，优化退出登录交互
+ * 版本: 3.3.10 - 修复历史项目显示，直接添加退出按钮
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.9_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.10_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -244,7 +244,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
           let stats = null;
           let projectData = null;
           let displayName = project.name || '未命名项目';
-          let displayDescription = project.description || '';
+          let displayDescription = '';  // 初始化为空，不再使用project.description（可能包含错误数据）
           let projectAddress = '';
           
           console.log(`[renderProjectList] 处理第${index + 1}个项目:`, {
