@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.6 - 增强showSaveModal调试信息和元素检查
+ * 版本: 3.3.7 - 修复刷新404问题，优化退出按钮
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.6_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.7_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
