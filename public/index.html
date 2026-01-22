@@ -6,13 +6,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>玻璃隔热膜裁切优化系统 V3.3.9</title>
+    <title>玻璃隔热膜裁切优化系统 V3.3.10</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/js/app.js?v=3.3.9_20260122"></script>
+    <script src="/js/app.js?v=3.3.10_20260122"></script>
     <style>
         :root {
             --primary-red: #BA1B25;
@@ -1014,7 +1014,7 @@
                     </svg>
                 </button>
                 <!-- 下拉菜单 - 点击显示 -->
-                <div id="userDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl hidden z-50">
+                <div id="userDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl hidden z-50 border border-gray-200">
                     <div class="py-1">
                         <button onclick="handleLogout()" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1025,6 +1025,13 @@
                     </div>
                 </div>
             </div>
+            <!-- 直接退出按钮（备用） -->
+            <button onclick="handleLogout()" class="bg-white text-primary-red font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-gray-50 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                退出
+            </button>
         </div>
     </div>
     
