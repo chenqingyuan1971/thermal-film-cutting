@@ -6,13 +6,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>玻璃隔热膜裁切优化系统 V3.3.5</title>
+    <title>玻璃隔热膜裁切优化系统 V3.3.8</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/js/app.js?v=3.3.5_20260119"></script>
+    <script src="/js/app.js?v=3.3.8_20260122"></script>
     <style>
         :root {
             --primary-red: #BA1B25;
@@ -44,6 +44,260 @@
         .btn-secondary:hover { background: var(--aux-smoke-gray); }
         .btn-tan:hover { background: #c9b189; }
         .input-focus:focus { border-color: var(--primary-red); outline: none; }
+        
+        /* ==================== 移动端适配样式 ==================== */
+        @media screen and (max-width: 768px) {
+            /* 基础调整 */
+            html {
+                font-size: 14px;
+            }
+            
+            body {
+                padding-bottom: 80px;
+            }
+            
+            .container {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+            
+            /* 标题卡片 */
+            .bg-primary-gradient.rounded-2xl {
+                padding: 1.5rem !important;
+            }
+            
+            .bg-primary-gradient h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .bg-primary-gradient .logo-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .bg-primary-gradient .logo-icon {
+                margin-right: 0 !important;
+                margin-bottom: 0.5rem;
+                width: 3rem !important;
+                height: 3rem !important;
+            }
+            
+            /* 导航栏 */
+            #authNavUser {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem !important;
+            }
+            
+            #authNavUser button {
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.875rem;
+            }
+            
+            /* 表单网格 - 单列布局 */
+            .grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+            
+            .grid-cols-2,
+            .grid-cols-3,
+            .grid-cols-4,
+            .grid-cols-5 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* 输入框优化 */
+            input[type="text"],
+            input[type="number"],
+            select,
+            textarea {
+                font-size: 16px !important; /* 防止iOS自动缩放 */
+                height: 44px !important;
+                padding: 0.75rem !important;
+            }
+            
+            textarea {
+                min-height: 80px !important;
+            }
+            
+            /* 标签样式 */
+            label {
+                font-size: 0.875rem;
+                margin-bottom: 0.25rem !important;
+            }
+            
+            /* 卡片样式 */
+            .rounded-2xl {
+                border-radius: 0.75rem !important;
+            }
+            
+            .shadow-xl,
+            .shadow-2xl {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            /* 按钮全宽 */
+            button.w-full {
+                width: 100% !important;
+                margin-bottom: 0.5rem;
+            }
+            
+            /* 模态框适配 */
+            .fixed.inset-0.bg-black.bg-opacity-50 {
+                padding: 1rem;
+                align-items: flex-start;
+                padding-top: 5%;
+            }
+            
+            .fixed.inset-0.bg-black.bg-opacity-50 > div {
+                width: 95% !important;
+                max-height: 85vh !important;
+                overflow-y: auto;
+                margin: 0 auto;
+            }
+            
+            .rounded-t-2xl {
+                border-top-left-radius: 0.75rem !important;
+                border-top-right-radius: 0.75rem !important;
+            }
+            
+            /* 模态框按钮 */
+            .fixed.inset-0.bg-black.bg-opacity-50 + div {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .fixed.inset-0.bg-black.bg-opacity-50 + div button {
+                flex: none !important;
+                width: 100%;
+                padding: 0.75rem !important;
+            }
+            
+            /* 表格响应式 */
+            .overflow-x-auto {
+                margin: 0 -12px;
+                padding: 0 12px;
+            }
+            
+            /* 项目卡片 */
+            .bg-white.border-2.border-gray-200.rounded-xl.p-4 {
+                padding: 1rem !important;
+            }
+            
+            /* Logo卡片 */
+            .logo-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem !important;
+                padding: 1rem !important;
+            }
+            
+            .logo-placeholder {
+                width: 80px !important;
+                height: 80px !important;
+            }
+            
+            .company-name {
+                font-size: 1.125rem !important;
+            }
+            
+            .company-subtitle {
+                font-size: 0.875rem !important;
+            }
+            
+            /* 历史记录模态框内容 */
+            .bg-white.rounded-2xl.shadow-2xl {
+                max-height: 80vh !important;
+                overflow-y: auto;
+            }
+            
+            /* 通知容器位置调整 */
+            .fixed.top-20.right-4 {
+                top: 1rem !important;
+                right: 0.5rem !important;
+                left: 0.5rem;
+            }
+            
+            /* 下拉菜单优化 */
+            .absolute.right-0.mt-2.w-48 {
+                right: -50%;
+                left: auto;
+            }
+        }
+        
+        /* 小屏幕额外优化 */
+        @media screen and (max-width: 480px) {
+            .bg-primary-gradient {
+                padding: 1rem !important;
+            }
+            
+            .bg-primary-gradient h1 {
+                font-size: 1.25rem !important;
+            }
+            
+            h2.text-2xl {
+                font-size: 1.25rem !important;
+            }
+            
+            h3.text-lg {
+                font-size: 1rem !important;
+            }
+            
+            .text-lg {
+                font-size: 1rem !important;
+            }
+            
+            .text-sm {
+                font-size: 0.75rem !important;
+            }
+            
+            .text-xs {
+                font-size: 0.65rem !important;
+            }
+            
+            .p-6 {
+                padding: 1rem !important;
+            }
+            
+            .p-8 {
+                padding: 1.25rem !important;
+            }
+            
+            .mb-8 {
+                margin-bottom: 1.5rem !important;
+            }
+            
+            .gap-4 {
+                gap: 0.75rem !important;
+            }
+        }
+        
+        /* ==================== 触摸设备优化 ==================== */
+        @media (hover: none) and (pointer: coarse) {
+            /* 触摸设备上增加触摸目标尺寸 */
+            button,
+            [role="button"] {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            /* 移除悬停效果（触摸设备不支持） */
+            button:active {
+                transform: scale(0.98);
+            }
+            
+            /* 触摸友好的下拉菜单 */
+            .group:hover .absolute {
+                display: none;
+            }
+            
+            .group:focus-within .absolute {
+                display: block;
+            }
+        }
+        
         .bg-vi-gradient { 
             background: #f5f5f5; 
         }
