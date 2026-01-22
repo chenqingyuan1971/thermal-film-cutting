@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.10 - 修复历史项目显示，直接添加退出按钮
+ * 版本: 3.3.11 - 修复历史项目显示，项目名称和地址分开显示
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.10_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.11_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -268,50 +268,47 @@ console.log(`[应用版本] ${APP_VERSION}`);
               });
               
               // 获取项目名称（从高到低优先级）
-              // 1. projectData.projectInfo.name (表单中填写的项目名称)
+              // 1. projectData.projectInfo.name (表单中填写的项目名称) ← 最优先
               // 2. projectData.name (旧版本可能保存在这里)
               // 3. project.name (数据库中的名称字段)
               // 4. "未命名项目" (默认)
               
               let finalDisplayName = null;
               
-              // 优先级1: projectData.projectInfo.name
-              if (projectData.projectInfo?.name) {
-                finalDisplayName = projectData.projectInfo.name;
+              // 优先级1: projectData.projectInfo.name (表单中的"项目名称"字段)
+              if (projectData.projectInfo?.name && projectData.projectInfo.name.trim()) {
+                finalDisplayName = projectData.projectInfo.name.trim();
                 console.log(`[renderProjectList] 第${index + 1}个: 使用projectInfo.name = "${finalDisplayName}"`);
               }
               // 优先级2: projectData.name
               else if (projectData.name) {
                 finalDisplayName = projectData.name;
-                console.log(`[renderProjectList] 第${index + 1}个: projectInfo.name不存在，使用projectData.name = "${finalDisplayName}"`);
+                console.log(`[renderProjectList] 第${index + 1}个: projectInfo.name为空，使用projectData.name = "${finalDisplayName}"`);
               }
               // 优先级3: project.name
               else if (project.name) {
                 finalDisplayName = project.name;
-                console.log(`[renderProjectList] 第${index + 1}个: projectData.name不存在，使用project.name = "${finalDisplayName}"`);
+                console.log(`[renderProjectList] 第${index + 1}个: projectData.name为空，使用project.name = "${finalDisplayName}"`);
               }
               
-              // 只有在找到有效名称时才更新displayName
+              // 更新显示名称
               if (finalDisplayName) {
                 displayName = finalDisplayName;
+              } else {
+                displayName = '未命名项目';
+                console.log(`[renderProjectList] 第${index + 1}个: 没有任何项目名称，使用默认值`);
               }
               
-              // 获取项目地址（如果有）
+              console.log(`[renderProjectList] 第${index + 1}个: 最终displayName = "${displayName}"`);
+              
+              // 获取项目地址（如果有）- 用于地址显示，不放到描述里
               if (projectData.projectInfo?.address) {
                 projectAddress = projectData.projectInfo.address;
-                displayDescription = `📍 ${projectAddress}`;
               }
               
-              // 如果之前有保存错误的描述（包含业主姓名），则用项目地址替代
-              // 不再使用 project.description（之前可能错误保存了业主姓名）
-              // 只在地址为空时才考虑其他信息
-              if (!projectAddress) {
-                if (projectData.projectInfo?.owner) {
-                  displayDescription = `业主：${projectData.projectInfo.owner}`;
-                } else if (projectData.projectInfo?.name) {
-                  displayDescription = '暂无地址信息';
-                }
-              }
+              // 项目描述保持为空或使用保存时填写的描述
+              // 不再自动使用地址或业主信息作为描述
+              // displayDescription 保持为空，让用户自己填写
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
