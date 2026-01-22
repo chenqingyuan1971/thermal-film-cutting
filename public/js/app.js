@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.14 - 项目名称显示在描述位置
+ * 版本: 3.3.15 - 增加搜索功能
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.14_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.15_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -198,173 +198,184 @@ console.log(`[应用版本] ${APP_VERSION}`);
     return stats;
   }
 
+  // 防抖函数 - 防止搜索过于频繁触发
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func.apply(this, args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
   // 渲染项目列表
-  function renderProjectList(projects) {
+  function renderProjectList(projects, searchTerm = '') {
     const listContainer = document.getElementById('projectListContainer');
     if (!listContainer) return;
     
-    console.log('[renderProjectList] 接收到的projects参数类型:', typeof projects);
-    console.log('[renderProjectList] 接收到的projects值:', projects);
-    console.log('[renderProjectList] 接收到的projects是否数组:', Array.isArray(projects));
+    console.log('[renderProjectList] 接收到的projects:', projects);
+    console.log('[renderProjectList] 搜索关键词:', searchTerm);
     
     // 确保 projects 是数组
     let projectsArray = [];
     if (Array.isArray(projects)) {
       projectsArray = projects;
-      console.log('[renderProjectList] projects是数组，使用原值');
     } else if (projects && typeof projects === 'object') {
       projectsArray = Object.values(projects);
-      console.log('[renderProjectList] projects是对象，转换为数组:', projectsArray);
-    } else {
-      console.log('[renderProjectList] projects无法转换为数组，使用空数组');
     }
     
-    console.log('[renderProjectList] 最终projectsArray长度:', projectsArray.length);
-    console.log('[renderProjectList] 最终projectsArray内容:', projectsArray);
+    // 缓存项目数据供搜索使用
+    window.cachedProjects = projectsArray;
+    
+    // 如果有搜索关键词，进行过滤
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      projectsArray = projectsArray.filter(project => {
+        // 搜索项目名称或业主姓名
+        try {
+          if (project.project_data) {
+            const data = typeof project.project_data === 'string' 
+              ? JSON.parse(project.project_data) 
+              : project.project_data;
+            const name = data.projectInfo?.name || '';
+            const owner = data.projectInfo?.owner || '';
+            const address = data.projectInfo?.address || '';
+            return name.toLowerCase().includes(searchLower) ||
+                   owner.toLowerCase().includes(searchLower) ||
+                   address.toLowerCase().includes(searchLower);
+          }
+          return (project.name || '').toLowerCase().includes(searchLower);
+        } catch (e) {
+          return (project.name || '').toLowerCase().includes(searchLower);
+        }
+      });
+      console.log('[renderProjectList] 过滤后的项目数:', projectsArray.length);
+    }
     
     // 空项目处理
     if (projectsArray.length === 0) {
       listContainer.innerHTML = `
+        <div class="p-4">
+          <div class="relative mb-4">
+            <input type="text" id="projectSearchInput" placeholder="搜索项目名或业主..." 
+              class="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl focus:border-primary-red focus:outline-none transition"
+              value="${escapeHtml(searchTerm)}">
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
         <div class="text-center py-12 text-gray-500">
           <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
           </svg>
-          <p class="text-lg">暂无保存的项目</p>
-          <p class="text-sm mt-2">开始一个新项目并保存，即可在此处查看</p>
+          <p class="text-lg">${searchTerm ? '未找到匹配的项目' : '暂无保存的项目'}</p>
+          <p class="text-sm mt-2">${searchTerm ? '请尝试其他关键词' : '开始一个新项目并保存，即可在此处查看'}</p>
         </div>
       `;
+      
+      // 绑定搜索框事件
+      const searchInput = document.getElementById('projectSearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(function() {
+          const term = this.value.trim();
+          console.log('[renderProjectList] 搜索输入:', term);
+          renderProjectList(window.cachedProjects, term);
+        }, 300));
+      }
       return;
     }
     
-    // 生成项目列表HTML
+    // 生成项目列表HTML（包含搜索框）
     listContainer.innerHTML = `
-      <div class="grid gap-4">
+      <div class="p-4 pb-2">
+        <div class="relative">
+          <input type="text" id="projectSearchInput" placeholder="搜索项目名或业主..." 
+            class="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl focus:border-primary-red focus:outline-none transition"
+            value="${escapeHtml(searchTerm)}">
+          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="grid gap-4 px-4 pb-4">
         ${projectsArray.map((project, index) => {
           // 解析项目数据
           let stats = null;
           let projectData = null;
-          let displayName = project.name || '未命名项目';
-          let displayDescription = '';  // 初始化为空，不再使用project.description（可能包含错误数据）
+          let displayName = '未命名项目';
+          let displayOwner = '';  // 业主姓名
+          let displayDescription = '';
           let projectAddress = '';
-          
-          console.log(`[renderProjectList] 处理第${index + 1}个项目:`, {
-            id: project.id,
-            projectName: project.name,
-            projectDescription: project.description
-          });
           
           try {
             if (project.project_data) {
-              // 打印原始project_data字符串
-              console.log(`[renderProjectList] 第${index + 1}个项目的原始project_data:`);
-              console.log('  字符串长度:', project.project_data.length);
-              console.log('  前200字符:', project.project_data.substring(0, 200));
-              
-              // 解析JSON
               projectData = typeof project.project_data === 'string' 
                 ? JSON.parse(project.project_data) 
                 : project.project_data;
               
-              // 打印解析后的projectData
-              console.log(`[renderProjectList] 第${index + 1}个项目的解析后projectData:`);
-              console.log('  projectData结构:', Object.keys(projectData));
-              console.log('  projectInfo存在:', !!projectData.projectInfo);
-              if (projectData.projectInfo) {
-                console.log('  projectInfo内容:', JSON.stringify(projectData.projectInfo, null, 2));
-              }
-              
               stats = parseStatsFromProjectData(projectData);
               
-              // 获取项目名称（从高到低优先级）
-              // 1. projectData.projectInfo.name (表单中填写的项目名称) ← 最优先
-              // 2. projectData.name (旧版本可能保存在这里)
-              // 3. project.name (数据库中的名称字段)
-              // 4. "未命名项目" (默认)
-              
-              let finalDisplayName = null;
-              
-              // 优先级1: projectData.projectInfo.name (表单中的"项目名称"字段)
+              // 获取项目名称
               if (projectData.projectInfo?.name && projectData.projectInfo.name.trim()) {
-                finalDisplayName = projectData.projectInfo.name.trim();
-                console.log(`[renderProjectList] 第${index + 1}个: 使用projectInfo.name = "${finalDisplayName}"`);
-              }
-              // 优先级2: projectData.name
-              else if (projectData.name) {
-                finalDisplayName = projectData.name;
-                console.log(`[renderProjectList] 第${index + 1}个: projectInfo.name为空，使用projectData.name = "${finalDisplayName}"`);
-              }
-              // 优先级3: project.name
-              else if (project.name) {
-                finalDisplayName = project.name;
-                console.log(`[renderProjectList] 第${index + 1}个: projectData.name为空，使用project.name = "${finalDisplayName}"`);
-              }
-              // 优先级4: 默认值
-              else {
-                finalDisplayName = '未命名项目';
-                console.log(`[renderProjectList] 第${index + 1}个: 没有任何项目名称，使用默认值`);
+                displayName = projectData.projectInfo.name.trim();
+              } else if (projectData.name) {
+                displayName = projectData.name;
+              } else if (project.name) {
+                displayName = project.name;
               }
               
-              // 更新显示名称
-              displayName = finalDisplayName;
-              console.log(`[renderProjectList] 第${index + 1}个: 最终displayName = "${displayName}"`);
+              // 获取业主姓名（新增）
+              displayOwner = projectData.projectInfo?.owner || '';
               
-              // 获取项目地址（如果有）- 用于地址显示，不放到描述里
-              if (projectData.projectInfo?.address) {
-                projectAddress = projectData.projectInfo.address;
-              }
+              // 获取项目地址
+              projectAddress = projectData.projectInfo?.address || '';
               
-              // 项目描述：显示项目名称（用户要求的）
-              // 如果有项目名称，显示在描述位置
-              displayDescription = finalDisplayName || '';
-            } else {
-              console.log(`[renderProjectList] 第${index + 1}个项目没有project_data`);
-              displayName = project.name || '未命名项目';
-              displayDescription = '';
+              // 项目描述显示项目名称
+              displayDescription = displayName;
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
           }
           
-          console.log(`[renderProjectList] 第${index + 1}个项目的最终显示名称: "${displayName}"`);
-          
-          // 生成统计信息
-          let statsHtml = '';
-          if (stats && stats.hasData) {
-            const productsText = stats.products.length > 0 ? stats.products.join('、') : '未指定';
-            statsHtml = `
-              <div class="mt-2 p-2 bg-gray-50 rounded-lg">
-                <div class="flex flex-wrap gap-3 text-xs">
-                  <span class="text-gray-600">
-                    <span class="font-semibold">拟用产品：</span>${escapeHtml(productsText)}
-                  </span>
-                  <span class="text-gray-600">
-                    <span class="font-semibold">玻璃面积：</span>${stats.glassArea.toFixed(2)}m²
-                  </span>
-                  <span class="text-gray-600">
-                    <span class="font-semibold">膜材面积：</span>${stats.filmArea.toFixed(2)}m²
-                  </span>
-                </div>
-              </div>
-            `;
-          }
-          
-          // 最终确认：打印即将渲染的displayName值
-          console.log(`[renderProjectList] >>> 第${index + 1}个项目准备渲染，displayName = "${displayName}"`);
-          
           const cardHtml = `
           <div class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-red-300 transition cursor-pointer project-item" data-id="${project.id}">
             <div class="flex items-start justify-between">
-              <div class="flex-1" onclick="openProject('${project.id}')">
+              <div class="flex-1" onclick="loadProject('${project.id}')">
                 <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
+                ${displayOwner ? `<p class="text-sm text-gray-500 mb-1">👤 ${escapeHtml(displayOwner)}</p>` : ''}
                 ${projectAddress ? `<p class="text-sm text-gray-500 mb-1">📍 ${escapeHtml(projectAddress)}</p>` : ''}
                 ${displayDescription ? `<p class="text-sm text-gray-600 mb-2">📝 ${escapeHtml(displayDescription)}</p>` : ''}
-                ${statsHtml}
+                ${stats && stats.hasData ? `
+                  <div class="mt-2 p-2 bg-gray-50 rounded-lg">
+                    <div class="flex flex-wrap gap-3 text-xs">
+                      <span class="text-gray-600">
+                        <span class="font-semibold">拟用产品：</span>${escapeHtml(stats.products.join('、') || '未指定')}
+                      </span>
+                      <span class="text-gray-600">
+                        <span class="font-semibold">玻璃面积：</span>${stats.glassArea.toFixed(2)}m²
+                      </span>
+                      <span class="text-gray-600">
+                        <span class="font-semibold">膜材面积：</span>${stats.filmArea.toFixed(2)}m²
+                      </span>
+                    </div>
+                  </div>
+                ` : ''}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
-                  <span>创建时间：${formatDate(project.created_at)}</span>
                   <span>更新时间：${formatDate(project.updated_at)}</span>
                 </div>
               </div>
               <div class="flex items-center gap-2 ml-4">
+                <button onclick="event.stopPropagation(); loadProject('${project.id}')" 
+                  class="px-3 py-2 bg-primary-red text-white font-semibold rounded-lg hover:bg-primary-red-dark transition flex items-center gap-1" title="加载项目">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                  </svg>
+                  加载
+                </button>
                 <button onclick="event.stopPropagation(); deleteProject('${project.id}')" 
                   class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="删除项目">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,13 +386,28 @@ console.log(`[应用版本] ${APP_VERSION}`);
             </div>
           </div>
           `;
-          
-          console.log(`[renderProjectList] 第${index + 1}个项目的卡片HTML中的标题: "${displayName}"`);
           return cardHtml;
         }).join('')}
       </div>
     `;
+    
+    // 绑定搜索框事件
+    const searchInput = document.getElementById('projectSearchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', debounce(function() {
+        const term = this.value.trim();
+        console.log('[renderProjectList] 搜索输入:', term);
+        renderProjectList(window.cachedProjects, term);
+      }, 300));
+    }
   }
+
+  // 搜索过滤函数（供全局调用）
+  window.filterProjectsBySearch = function(searchTerm) {
+    if (window.cachedProjects) {
+      renderProjectList(window.cachedProjects, searchTerm);
+    }
+  };
 
   // 保存当前项目
   async function saveProject(name, description, isSaveAndNew = false) {
@@ -393,28 +419,71 @@ console.log(`[应用版本] ${APP_VERSION}`);
     
     const projectData = collectProjectData();
     
-    // 调试：打印收集的项目数据详情
+    // 获取表单中的项目名称和业主姓名
+    const formProjectName = document.getElementById('projectName')?.value || '';
+    const formOwnerName = document.getElementById('ownerName')?.value || '';
+    const formAddress = document.getElementById('projectAddress')?.value || '';
+    
+    // 使用"项目名称+业主姓名"作为唯一标识
+    const uniqueKey = `${formProjectName.trim()}_${formOwnerName.trim()}`;
+    
     console.log('========== 保存项目调试 ==========');
-    console.log('1. 表单中的projectName:', document.getElementById('projectName')?.value);
-    console.log('2. collectProjectData返回:', JSON.stringify(projectData.projectInfo, null, 2));
-    console.log('3. 弹窗传入的name参数:', name);
-    console.log('4. 弹窗传入的description参数:', description);
+    console.log('1. 表单项目名称:', formProjectName);
+    console.log('2. 表单业主姓名:', formOwnerName);
+    console.log('3. 唯一标识(uniqueKey):', uniqueKey);
+    console.log('4. 弹窗传入的name参数:', name);
     
-    // 确保 projectData.projectInfo.name 与保存的名称一致
-    // 优先使用表单中的项目名称，如果没有则使用保存对话框中的名称
-    const finalProjectName = projectData.projectInfo?.name || name;
-    console.log('5. 计算出的finalProjectName:', finalProjectName);
+    // 确保 projectData.projectInfo 包含正确的值
+    if (!projectData.projectInfo) {
+      projectData.projectInfo = {};
+    }
+    projectData.projectInfo.name = formProjectName.trim() || name;
+    projectData.projectInfo.owner = formOwnerName.trim();
+    projectData.projectInfo.address = formAddress;
     
-    if (projectData.projectInfo) {
-      projectData.projectInfo.name = finalProjectName;
+    // 如果是保存并新建，或者没有当前项目ID，则先查询是否已存在相同项目
+    let existingProjectId = null;
+    
+    if (!isSaveAndNew && AppState.currentProject?.id) {
+      // 有当前项目ID，直接更新
+      existingProjectId = AppState.currentProject.id;
+    } else {
+      // 需要检查是否存在相同项目名+业主的项目
+      try {
+        const listResponse = await fetch(`${API_BASE}/api/projects`, {
+          credentials: 'same-origin'
+        });
+        const listData = await listResponse.json();
+        
+        if (listData.success && listData.projects) {
+          // 查找匹配的项目
+          const projects = Array.isArray(listData.projects) ? listData.projects : Object.values(listData.projects);
+          const existingProject = projects.find(p => {
+            if (!p.project_data) return false;
+            try {
+              const data = typeof p.project_data === 'string' ? JSON.parse(p.project_data) : p.project_data;
+              const pName = data.projectInfo?.name?.trim() || '';
+              const pOwner = data.projectInfo?.owner?.trim() || '';
+              return `${pName}_${pOwner}` === uniqueKey;
+            } catch (e) {
+              return false;
+            }
+          });
+          
+          if (existingProject) {
+            existingProjectId = existingProject.id;
+            console.log('5. 找到已存在的项目，ID:', existingProjectId);
+          }
+        }
+      } catch (e) {
+        console.error('查询已存在项目失败:', e);
+      }
     }
     
-    // 调试：打印最终要保存的数据
-    console.log('6. 最终要保存的projectData:', JSON.stringify(projectData, null, 2));
-    console.log('===================================');
+    const projectId = existingProjectId || null;
     
-    // 如果是保存并新建，清除当前项目ID以创建新项目
-    const projectId = isSaveAndNew ? null : (AppState.currentProject?.id || null);
+    console.log('6. 最终使用的projectId:', projectId);
+    console.log('===================================');
     
     try {
       const response = await fetch(`${API_BASE}/api/projects/save`, {
@@ -423,7 +492,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: projectId,
-          name: finalProjectName,  // 使用统一的最终项目名称
+          name: projectData.projectInfo.name,
           description: description,
           data: projectData
         })
@@ -435,12 +504,14 @@ console.log(`[应用版本] ${APP_VERSION}`);
         // 更新当前项目状态
         AppState.currentProject = {
           id: data.id,
-          name: name,
+          name: projectData.projectInfo.name,
           description: description
         };
         
         if (isSaveAndNew) {
           showNotification('项目保存成功！准备创建新项目...', 'success');
+        } else if (projectId) {
+          showNotification('项目已更新！', 'success');
         } else {
           showNotification('项目保存成功！', 'success');
         }
@@ -455,6 +526,91 @@ console.log(`[应用版本] ${APP_VERSION}`);
       console.error('保存项目失败:', error);
       showNotification('网络错误，保存失败', 'error');
       return false;
+    }
+  }
+
+  // 加载项目（恢复项目数据到表单）
+  function loadProject(projectId) {
+    console.log('[loadProject] 开始加载项目:', projectId);
+    
+    // 先获取项目数据
+    fetch(`${API_BASE}/api/projects/${projectId}`, {
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.project) {
+        const project = data.project;
+        const projectData = project.data || project.project_data;
+        
+        console.log('[loadProject] 获取到项目数据:', projectData);
+        
+        // 恢复表单数据
+        if (projectData.projectInfo) {
+          if (document.getElementById('projectName')) {
+            document.getElementById('projectName').value = projectData.projectInfo.name || '';
+          }
+          if (document.getElementById('ownerName')) {
+            document.getElementById('ownerName').value = projectData.projectInfo.owner || '';
+          }
+          if (document.getElementById('contactPhone')) {
+            document.getElementById('contactPhone').value = projectData.projectInfo.phone || '';
+          }
+          if (document.getElementById('projectAddress')) {
+            document.getElementById('projectAddress').value = projectData.projectInfo.address || '';
+          }
+        }
+        
+        // 恢复玻璃数据
+        if (projectData.glasses) {
+          window.glasses = projectData.glasses;
+          if (typeof window.updateGlassList === 'function') {
+            window.updateGlassList();
+          }
+        }
+        
+        // 恢复选定的方案
+        if (projectData.selectedPlans) {
+          window.selectedPlans = projectData.selectedPlans;
+        }
+        
+        // 恢复优化结果
+        if (projectData.optimizationResult) {
+          window.optimizationResult = projectData.optimizationResult;
+        }
+        
+        // 更新当前项目状态
+        AppState.currentProject = {
+          id: project.id,
+          name: projectData.projectInfo?.name || project.name,
+          description: projectData.projectInfo?.owner || ''
+        };
+        
+        // 关闭历史记录弹窗
+        closeModal('historyModal');
+        
+        showNotification('项目已加载到表单，可以继续编辑', 'success');
+      } else {
+        showNotification('加载项目失败', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('加载项目失败:', error);
+      showNotification('网络错误，加载失败', 'error');
+    });
+  }
+
+  // 搜索项目
+  function searchProjects(keyword) {
+    const searchInput = document.getElementById('projectSearchInput');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    console.log('[searchProjects] 搜索关键词:', searchTerm);
+    
+    // 触发重新渲染，传递搜索关键词
+    if (typeof window.filterProjectsBySearch === 'function') {
+      window.filterProjectsBySearch(searchTerm);
     }
   }
 
