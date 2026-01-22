@@ -186,22 +186,27 @@ app.post('/api/user/logout', (req, res) => {
 
 // 路由：获取项目列表
 app.get('/api/projects', (req, res) => {
+  console.log('[API] GET /api/projects - Session:', req.session.userId);
+  
   if (!req.session.userId) {
+    console.log('[API] 用户未登录，返回401');
     return res.status(401).json({ success: false, message: '请先登录' });
   }
 
   try {
+    console.log('[API] 查询用户项目，userId:', req.session.userId);
     const projects = db.prepare(`
       SELECT id, name, description, project_data, created_at, updated_at
       FROM projects
       WHERE user_id = ?
       ORDER BY updated_at DESC
     `).all(req.session.userId);
-
+    
+    console.log('[API] 查询到项目数量:', projects.length);
     res.json({ success: true, projects });
   } catch (error) {
     console.error('获取项目列表错误:', error);
-    res.status(500).json({ success: false, message: '获取项目列表失败' });
+    res.status(500).json({ success: false, message: '获取项目列表失败: ' + error.message });
   }
 });
 
