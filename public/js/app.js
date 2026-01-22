@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.13 - 强制清除描述缓存，添加暂无描述提示
+ * 版本: 3.3.14 - 项目名称显示在描述位置
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.13_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.14_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -313,12 +313,13 @@ console.log(`[应用版本] ${APP_VERSION}`);
                 projectAddress = projectData.projectInfo.address;
               }
               
-              // 项目描述保持为空或使用保存时填写的描述
-              // 不再自动使用地址或业主信息作为描述
-              // displayDescription 保持为空，让用户自己填写
+              // 项目描述：显示项目名称（用户要求的）
+              // 如果有项目名称，显示在描述位置
+              displayDescription = finalDisplayName || '';
             } else {
               console.log(`[renderProjectList] 第${index + 1}个项目没有project_data`);
               displayName = project.name || '未命名项目';
+              displayDescription = '';
             }
           } catch (e) {
             console.error('解析项目数据失败:', e);
@@ -356,7 +357,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
               <div class="flex-1" onclick="openProject('${project.id}')">
                 <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
                 ${projectAddress ? `<p class="text-sm text-gray-500 mb-1">📍 ${escapeHtml(projectAddress)}</p>` : ''}
-                ${displayDescription ? `<p class="text-sm text-gray-600 mb-2">📝 ${escapeHtml(displayDescription)}</p>` : '<p class="text-sm text-gray-400 mb-2">📝 暂无描述</p>'}
+                ${displayDescription ? `<p class="text-sm text-gray-600 mb-2">📝 ${escapeHtml(displayDescription)}</p>` : ''}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
                   <span>创建时间：${formatDate(project.created_at)}</span>
