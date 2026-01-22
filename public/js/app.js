@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.15 - 增加搜索功能
+ * 版本: 3.3.16 - 修复loadProject未暴露bug，修复移动端弹窗问题
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.15_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.16_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -119,6 +119,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
         
         // 重置界面
         closeModal('historyModal');
+        closeModal('saveModal');
         clearAll();
         
         showNotification('已安全退出', 'info');
@@ -791,6 +792,12 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // 显示历史记录模态框
   function showHistoryModal() {
+    // 修复移动端弹窗重叠问题：打开历史记录弹窗时先关闭其他弹窗
+    closeModal('saveModal');
+    closeModal('authModal');
+    closeModal('planSelectionModal');
+    closeModal('importModal');
+    
     const modal = document.getElementById('historyModal');
     if (modal) {
       modal.classList.remove('hidden');
@@ -805,6 +812,12 @@ console.log(`[应用版本] ${APP_VERSION}`);
       showAuthModal('login');
       return;
     }
+    
+    // 修复移动端弹窗重叠问题：打开保存弹窗时先关闭其他弹窗
+    closeModal('historyModal');
+    closeModal('authModal');
+    closeModal('planSelectionModal');
+    closeModal('importModal');
     
     const modal = document.getElementById('saveModal');
     if (modal) {
@@ -1094,6 +1107,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
   window.openProject = openProject;
   window.saveProject = saveProject;
   window.deleteProject = deleteProject;
+  window.loadProject = loadProject;
   
   window.AppAuth = {
     checkLoginStatus,
@@ -1103,7 +1117,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
     logoutUser,
     saveProject,
     openProject,
-    deleteProject
+    deleteProject,
+    loadProject
   };
 
 })();
