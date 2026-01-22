@@ -12,7 +12,7 @@
     <meta http-equiv="Expires" content="0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/js/app.js?v=3.3.15"></script>
+    <script src="/js/app.js?v=3.3.16"></script>
     <style>
         :root {
             --primary-red: #BA1B25;
@@ -5857,3 +5857,69 @@ B1	800	1000	智幕Pro30"></textarea>
             };
         }
     </script>
+
+        
+        // 移动端弹窗层级修复
+        (function() {
+            const style = document.createElement('style');
+            style.textContent = `
+                /* 移动端弹窗层级修复 */
+                @media (max-width: 768px) {
+                    #historyModal { z-index: 9999 !important; }
+                    #saveModal { z-index: 9998 !important; }
+                    #authModal { z-index: 9997 !important; }
+                    #planSelectionModal { z-index: 9996 !important; }
+                    #importModal { z-index: 9995 !important; }
+                    
+                    /* 确保弹窗内容可滚动 */
+                    #historyModal .overflow-y-auto,
+                    #saveModal .overflow-y-auto {
+                        max-height: 70vh;
+                        overflow-y: auto;
+                        -webkit-overflow-scrolling: touch;
+                    }
+                    
+                    /* 移动端弹窗全屏显示 */
+                    #historyModal .bg-white,
+                    #saveModal .bg-white {
+                        width: 95%;
+                        max-width: 95%;
+                        margin: 10px auto;
+                        border-radius: 12px;
+                    }
+                    
+                    /* 防止页面滚动 */
+                    body.modal-open {
+                        overflow: hidden;
+                        position: fixed;
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 监听弹窗显示/隐藏来控制body滚动
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.target.id && mutation.target.id.includes('Modal')) {
+                        const anyModalOpen = document.querySelector('[id^="historyModal"], [id^="saveModal"], [id^="authModal"]');
+                        if (anyModalOpen && !anyModalOpen.classList.contains('hidden')) {
+                            document.body.classList.add('modal-open');
+                        } else {
+                            document.body.classList.remove('modal-open');
+                        }
+                    }
+                });
+            });
+            
+            // 监听所有模态框
+            ['historyModal', 'saveModal', 'authModal'].forEach(function(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+                }
+            });
+        })();
+    </script>
+</html>
