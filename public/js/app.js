@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.8 - 修复字段联动问题，全局移动端适配
+ * 版本: 3.3.9 - 修复历史项目显示问题，优化退出登录交互
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.8_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.9_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -299,14 +299,18 @@ console.log(`[应用版本] ${APP_VERSION}`);
               // 获取项目地址（如果有）
               if (projectData.projectInfo?.address) {
                 projectAddress = projectData.projectInfo.address;
+                displayDescription = `📍 ${projectAddress}`;
               }
               
-              // 获取项目描述
-              // 优先显示：project.description（保存对话框中的描述）> projectInfo中的业主信息
-              if (project.description) {
-                displayDescription = project.description;
-              } else if (projectData.projectInfo?.owner) {
-                displayDescription = `业主：${projectData.projectInfo.owner}`;
+              // 如果之前有保存错误的描述（包含业主姓名），则用项目地址替代
+              // 不再使用 project.description（之前可能错误保存了业主姓名）
+              // 只在地址为空时才考虑其他信息
+              if (!projectAddress) {
+                if (projectData.projectInfo?.owner) {
+                  displayDescription = `业主：${projectData.projectInfo.owner}`;
+                } else if (projectData.projectInfo?.name) {
+                  displayDescription = '暂无地址信息';
+                }
               }
             }
           } catch (e) {
