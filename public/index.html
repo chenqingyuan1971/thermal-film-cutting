@@ -6,13 +6,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>玻璃隔热膜裁切优化系统 V3.3.8</title>
+    <title>玻璃隔热膜裁切优化系统 V3.3.9</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/js/app.js?v=3.3.8_20260122"></script>
+    <script src="/js/app.js?v=3.3.9_20260122"></script>
     <style>
         :root {
             --primary-red: #BA1B25;
@@ -1004,7 +1004,7 @@
                 历史记录
             </button>
             <div class="relative group">
-                <button class="bg-primary-red text-white font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-primary-red-dark transition flex items-center gap-2">
+                <button id="userMenuBtn" class="bg-primary-red text-white font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-primary-red-dark transition flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
@@ -1013,10 +1013,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <!-- 下拉菜单 -->
-                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl hidden group-hover:block z-50">
+                <!-- 下拉菜单 - 点击显示 -->
+                <div id="userDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl hidden z-50">
                     <div class="py-1">
-                        <button onclick="logoutUser()" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                        <button onclick="handleLogout()" class="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                             </svg>
@@ -1027,6 +1027,56 @@
             </div>
         </div>
     </div>
+    
+    <script>
+    // 用户菜单下拉交互
+    (function() {
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        if (userMenuBtn && userDropdown) {
+            // 点击按钮切换显示
+            userMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('hidden');
+            });
+            
+            // 点击其他地方关闭下拉菜单
+            document.addEventListener('click', function(e) {
+                if (!userDropdown.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                    userDropdown.classList.add('hidden');
+                }
+            });
+            
+            // ESC键关闭下拉菜单
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    userDropdown.classList.add('hidden');
+                }
+            });
+        }
+        
+        // 退出登录处理函数
+        window.handleLogout = function() {
+            console.log('[handleLogout] 开始执行退出');
+            if (window.AppAuth && window.AppAuth.logoutUser) {
+                window.AppAuth.logoutUser();
+            } else {
+                console.error('[handleLogout] AppAuth未加载');
+                // 直接调用全局函数
+                if (typeof logoutUser === 'function') {
+                    logoutUser();
+                } else {
+                    console.error('[handleLogout] logoutUser函数未定义');
+                }
+            }
+            // 关闭下拉菜单
+            if (userDropdown) {
+                userDropdown.classList.add('hidden');
+            }
+        };
+    })();
+    </script>
     
     <!-- 通知容器 -->
     <div id="notificationContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
