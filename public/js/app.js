@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.12 - 添加详细调试日志，追踪项目名称保存/读取流程
+ * 版本: 3.3.13 - 强制清除描述缓存，添加暂无描述提示
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.12_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.13_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -356,7 +356,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
               <div class="flex-1" onclick="openProject('${project.id}')">
                 <h4 class="font-bold text-lg text-gray-800 mb-1">${escapeHtml(displayName)}</h4>
                 ${projectAddress ? `<p class="text-sm text-gray-500 mb-1">📍 ${escapeHtml(projectAddress)}</p>` : ''}
-                ${displayDescription ? `<p class="text-sm text-gray-600 mb-2">📝 ${escapeHtml(displayDescription)}</p>` : ''}
+                ${displayDescription ? `<p class="text-sm text-gray-600 mb-2">📝 ${escapeHtml(displayDescription)}</p>` : '<p class="text-sm text-gray-400 mb-2">📝 暂无描述</p>'}
                 ${statsHtml}
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-2">
                   <span>创建时间：${formatDate(project.created_at)}</span>
