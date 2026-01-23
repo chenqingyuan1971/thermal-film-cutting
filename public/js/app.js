@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.16 - 修复手机端弹窗重叠问题
+ * 版本: 3.3.17 - 修复手机端加载超时问题
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.16_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.17_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -132,29 +132,116 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // ==================== 项目管理相关函数 ====================
 
-  // 加载项目列表
+  // 加载项目列表（带超时处理）
   async function loadProjectList() {
     if (!AppState.isLoggedIn) return;
     
+    // 获取列表容器
+    const listContainer = document.getElementById('projectListContainer');
+    if (listContainer) {
+      listContainer.innerHTML = `
+        <div class="p-4">
+          <div class="relative mb-4">
+            <input type="text" id="projectSearchInput" placeholder="搜索项目名或业主..." 
+              class="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl focus:border-primary-red focus:outline-none transition"
+              value="">
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-center py-12 text-gray-500">
+          <div class="animate-spin inline-block w-8 h-8 border-4 border-primary-red border-t-transparent rounded-full mb-4"></div>
+          <p class="text-lg">正在加载项目...</p>
+          <p class="text-sm mt-2">请稍候</p>
+        </div>
+      `;
+    }
+    
     try {
-      const response = await fetch(`${API_BASE}/api/projects`, {
-        credentials: 'same-origin'
-      });
-      const data = await response.json();
+      // 添加超时控制（10秒超时）
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      console.log('[loadProjectList] API响应原始数据:', data);
-      console.log('[loadProjectList] data.projects类型:', typeof data.projects);
-      console.log('[loadProjectList] data.projects值:', data.projects);
-      console.log('[loadProjectList] data.projects是否数组:', Array.isArray(data.projects));
+      const response = await fetch(`${API_BASE}/api/projects`, {
+        credentials: 'same-origin',
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      console.log('[loadProjectList] API响应原始数据:', response);
+      const data = await response.json();
+      console.log('[loadProjectList] API响应解析后:', data);
       
       if (data.success) {
         renderProjectList(data.projects);
       } else {
+        // 显示错误状态
+        if (listContainer) {
+          listContainer.innerHTML = `
+            <div class="p-4">
+              <div class="relative mb-4">
+                <input type="text" id="projectSearchInput" placeholder="搜索项目名或业主..." 
+                  class="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl focus:border-primary-red focus:outline-none transition"
+                  value="">
+                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="text-center py-12 text-gray-500">
+              <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+              <p class="text-lg">加载失败</p>
+              <p class="text-sm mt-2">${data.message || '无法获取项目列表'}</p>
+              <button onclick="retryLoadProjectList()" class="mt-4 px-4 py-2 bg-primary-red text-white rounded-lg">
+                重新加载
+              </button>
+            </div>
+          `;
+          <!-- 绑定重试按钮事件 - retryLoadProjectList 已在全局定义 -->
+        }
         showNotification(data.message || '加载项目列表失败', 'error');
       }
     } catch (error) {
       console.error('加载项目列表失败:', error);
-      showNotification('网络错误，加载失败', 'error');
+      
+      // 显示错误状态
+      if (listContainer) {
+        let errorMsg = '网络错误，加载失败';
+        if (error.name === 'AbortError') {
+          errorMsg = '请求超时，请检查网络连接';
+        }
+        
+        listContainer.innerHTML = `
+          <div class="p-4">
+            <div class="relative mb-4">
+              <input type="text" id="projectSearchInput" placeholder="搜索项目名或业主..." 
+                class="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl focus:border-primary-red focus:outline-none transition"
+                value="">
+              <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="text-center py-12 text-gray-500">
+            <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <p class="text-lg">加载失败</p>
+            <p class="text-sm mt-2">${errorMsg}</p>
+            <button onclick="retryLoadProjectList()" class="mt-4 px-4 py-2 bg-primary-red text-white rounded-lg">
+              重新加载
+            </button>
+          </div>
+        `;
+        // 绑定重试按钮事件
+        window.retryLoadProjectList = loadProjectList;
+      }
+      
+      showNotification(error.name === 'AbortError' ? '请求超时，请重试' : '网络错误，加载失败', 'error');
     }
   }
 
@@ -860,6 +947,11 @@ console.log(`[应用版本] ${APP_VERSION}`);
     modalIds.forEach(id => closeModal(id));
   }
 
+  // 重试加载项目列表（供全局调用）
+  function retryLoadProjectList() {
+    loadProjectList();
+  }
+
   // ==================== 工具函数 ====================
 
   // 显示通知消息
@@ -1104,6 +1196,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
   window.deleteProject = deleteProject;
   window.loadProject = loadProject;
   window.closeAllModals = closeAllModals;
+  window.retryLoadProjectList = retryLoadProjectList;
   
   window.AppAuth = {
     checkLoginStatus,
@@ -1115,7 +1208,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
     openProject,
     deleteProject,
     loadProject,
-    closeAllModals
+    closeAllModals,
+    retryLoadProjectList
   };
 
 })();
