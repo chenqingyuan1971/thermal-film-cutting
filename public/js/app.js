@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.21 - 修复关闭函数定义时机问题
+ * 版本: 3.3.22 - 修正关闭按钮提示文字
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.21_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.22_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -153,7 +153,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
         <div class="text-center py-12 text-gray-500">
           <div class="animate-spin inline-block w-8 h-8 border-4 border-primary-red border-t-transparent rounded-full mb-4"></div>
           <p class="text-lg">正在加载项目...</p>
-          <p class="text-sm mt-2">首次加载可能较慢，请耐心等待</p>
+          <p class="text-sm mt-2">首次加载较慢，请耐心等待<br>或点击顶部左侧红色区域的 X 关闭此弹窗</p>
         </div>
       `;
     }
