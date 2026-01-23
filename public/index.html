@@ -6,13 +6,29 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>玻璃隔热膜裁切优化系统 V3.3.20</title>
+    <title>玻璃隔热膜裁切优化系统 V3.3.21</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/js/app.js?v=3.3.20"></script>
+    <script src="/js/app.js?v=3.3.21"></script>
+    <script>
+        // 关闭历史记录弹窗的函数（在主JS加载后定义，确保按钮的onclick可以调用）
+        window.forceCloseHistoryModal = function() {
+            var modal = document.getElementById('historyModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
+        
+        // 点击遮罩层关闭弹窗
+        window.closeHistoryModalOnClick = function(event) {
+            if (event.target.id === 'historyModal') {
+                forceCloseHistoryModal();
+            }
+        };
+    </script>
     <style>
         :root {
             --primary-red: #BA1B25;
@@ -5740,24 +5756,6 @@ B1	800	1000	智幕Pro30"></textarea>
         </div>
     </div>
     
-    <!-- 历史记录弹窗关闭相关函数 -->
-    <script>
-        // 强制关闭历史记录弹窗（即使在加载中也能关闭）
-        window.forceCloseHistoryModal = function() {
-            var modal = document.getElementById('historyModal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        };
-        
-        // 点击遮罩层关闭弹窗
-        window.closeHistoryModalOnClick = function(event) {
-            if (event.target.id === 'historyModal') {
-                forceCloseHistoryModal();
-            }
-        };
-    </script>
-
 </body>
 </html>
     
