@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.17 - 修复手机端加载超时问题
+ * 版本: 3.3.19 - 修复历史记录弹窗自动弹出问题
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.17_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.19_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -153,15 +153,15 @@ console.log(`[应用版本] ${APP_VERSION}`);
         <div class="text-center py-12 text-gray-500">
           <div class="animate-spin inline-block w-8 h-8 border-4 border-primary-red border-t-transparent rounded-full mb-4"></div>
           <p class="text-lg">正在加载项目...</p>
-          <p class="text-sm mt-2">请稍候</p>
+          <p class="text-sm mt-2">首次加载可能较慢，请耐心等待</p>
         </div>
       `;
     }
     
     try {
-      // 添加超时控制（10秒超时）
+      // 添加超时控制（海外服务器，延长到20秒）
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
       
       const response = await fetch(`${API_BASE}/api/projects`, {
         credentials: 'same-origin',
@@ -195,7 +195,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
               </svg>
               <p class="text-lg">加载失败</p>
-              <p class="text-sm mt-2">${data.message || '无法获取项目列表'}</p>
+              <p class="text-sm mt-2">海外服务器连接较慢，请稍后重试</p>
               <button onclick="retryLoadProjectList()" class="mt-4 px-4 py-2 bg-primary-red text-white rounded-lg">
                 重新加载
               </button>
@@ -231,7 +231,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
             <p class="text-lg">加载失败</p>
-            <p class="text-sm mt-2">${errorMsg}</p>
+            <p class="text-sm mt-2">网络连接超时，请稍后重试</p>
             <button onclick="retryLoadProjectList()" class="mt-4 px-4 py-2 bg-primary-red text-white rounded-lg">
               重新加载
             </button>
@@ -878,6 +878,13 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // 显示历史记录模态框
   function showHistoryModal() {
+    // 如果未登录，先显示登录界面
+    if (!AppState.isLoggedIn) {
+      showNotification('请先登录后再查看历史项目', 'warning');
+      showAuthModal('login');
+      return;
+    }
+    
     closeAllModals(); // 先关闭其他弹窗
     const modal = document.getElementById('historyModal');
     if (modal) {
