@@ -5749,12 +5749,27 @@ B1	800	1000	智幕Pro30"></textarea>
             </div>
             
             <div class="p-6">
+                <!-- 立即显示可关闭的界面，异步加载项目列表 -->
                 <div id="projectListContainer" class="space-y-4">
                     <div class="text-center text-gray-500 py-8">
-                        <p>正在加载...</p>
-                        <p class="text-sm mt-2">请等待或点击左侧红色区域的 X 关闭</p>
+                        <p class="text-lg mb-4">正在加载项目列表...</p>
+                        <p class="text-sm mb-4">如果长时间卡在这里，请点击下方按钮关闭</p>
+                        <button onclick="document.getElementById('historyModal').classList.add('hidden');" 
+                          class="bg-red-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-600 transition shadow-lg"
+                          style="background: var(--primary-red);">
+                          关闭此窗口
+                        </button>
                     </div>
                 </div>
+                <!-- 异步加载项目列表，失败不影响关闭 -->
+                <script>
+                // 异步加载项目列表，不阻塞界面交互
+                setTimeout(function() {
+                    if (typeof window.AppAuth !== 'undefined' && window.AppAuth.loadProjectList) {
+                        window.AppAuth.loadProjectList();
+                    }
+                }, 500);
+                </script>
             </div>
         </div>
     </div>
