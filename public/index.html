@@ -5761,6 +5761,13 @@ B1	800	1000	智幕Pro30"></textarea>
                         </button>
                     </div>
                 </div>
+                <!-- 手动刷新按钮 -->
+                <div class="text-center mt-4">
+                    <button onclick="if(window.AppAuth && window.AppAuth.loadProjectList){window.AppAuth.loadProjectList();} else {alert('正在加载，请稍候...');}" 
+                      class="px-4 py-2 border-2 border-primary-red text-primary-red rounded-lg hover:bg-red-50 transition">
+                      刷新列表
+                    </button>
+                </div>
                 <!-- 异步加载项目列表，失败不影响关闭 -->
                 <script>
                 // 异步加载项目列表，不阻塞界面交互
