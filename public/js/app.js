@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.17 - 修复移动端弹窗重叠问题，添加closeAllModals函数
+ * 版本: 3.3.15 - 增加搜索功能
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.17_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.15_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -119,7 +119,6 @@ console.log(`[应用版本] ${APP_VERSION}`);
         
         // 重置界面
         closeModal('historyModal');
-        closeModal('saveModal');
         clearAll();
         
         showNotification('已安全退出', 'info');
@@ -790,22 +789,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
     }
   }
 
-  // 关闭所有模态框 - 修复移动端弹窗重叠问题的核心函数
-  function closeAllModals() {
-    const modalIds = ['historyModal', 'saveModal', 'authModal', 'planSelectionModal', 'importModal', 'planModal'];
-    modalIds.forEach(modalId => {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.classList.add('hidden');
-      }
-    });
-  }
-
   // 显示历史记录模态框
   function showHistoryModal() {
-    // 修复移动端弹窗重叠问题：打开历史记录弹窗时先关闭所有其他弹窗
-    closeAllModals();
-    
     const modal = document.getElementById('historyModal');
     if (modal) {
       modal.classList.remove('hidden');
@@ -820,9 +805,6 @@ console.log(`[应用版本] ${APP_VERSION}`);
       showAuthModal('login');
       return;
     }
-    
-    // 修复移动端弹窗重叠问题：打开保存弹窗时先关闭所有其他弹窗
-    closeAllModals();
     
     const modal = document.getElementById('saveModal');
     if (modal) {
@@ -869,9 +851,6 @@ console.log(`[应用版本] ${APP_VERSION}`);
       modal.classList.add('hidden');
     }
   }
-
-  // 暴露关闭所有模态框函数到全局
-  window.closeAllModals = closeAllModals;
 
   // ==================== 工具函数 ====================
 
@@ -1115,7 +1094,6 @@ console.log(`[应用版本] ${APP_VERSION}`);
   window.openProject = openProject;
   window.saveProject = saveProject;
   window.deleteProject = deleteProject;
-  window.loadProject = loadProject;
   
   window.AppAuth = {
     checkLoginStatus,
@@ -1125,8 +1103,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
     logoutUser,
     saveProject,
     openProject,
-    deleteProject,
-    loadProject
+    deleteProject
   };
 
 })();
