@@ -5741,7 +5741,7 @@ B1	800	1000	智幕Pro30"></textarea>
         <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto relative" onclick="event.stopPropagation()">
             <div class="sticky top-0 bg-primary-red text-white p-6 rounded-t-2xl z-10 flex justify-between items-center">
                 <h2 class="text-2xl font-bold">我的项目</h2>
-                <button id="historyModalClose" class="text-white hover:text-gray-200" onclick="alert('X button clicked!');">
+                <button id="historyModalClose" class="text-white hover:text-gray-200" onclick="this.closest('#historyModal').classList.add('hidden');">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -5754,7 +5754,7 @@ B1	800	1000	智幕Pro30"></textarea>
                     <div class="text-center text-gray-500 py-8">
                         <p class="text-lg mb-4">正在加载项目列表...</p>
                         <p class="text-sm mb-4">如果长时间卡在这里，请点击下方按钮关闭</p>
-                        <button onclick="document.getElementById('historyModal').classList.add('hidden');" 
+                        <button onclick="this.closest('#historyModal').classList.add('hidden');" 
                           class="bg-red-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-600 transition shadow-lg"
                           style="background: var(--primary-red);">
                           关闭此窗口
