@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.20 - 添加调试日志和备用关闭机制
+ * 版本: 3.3.21 - 修复关闭函数定义时机问题
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.20_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.21_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
