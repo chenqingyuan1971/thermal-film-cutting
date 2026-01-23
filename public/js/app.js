@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.19 - 修复历史记录弹窗自动弹出问题
+ * 版本: 3.3.20 - 添加调试日志和备用关闭机制
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.19_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.20_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -878,6 +878,14 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // 显示历史记录模态框
   function showHistoryModal() {
+    // 在页面上显示调试信息
+    const debugInfo = document.getElementById('debugInfo');
+    if (debugInfo) {
+      debugInfo.innerHTML = '<div style="background:#ff0000;color:white;padding:10px;position:fixed;top:0;left:0;right:0;z-index:9999;font-size:14px;">⚠️ showHistoryModal 被调用！<br>时间：' + new Date().toLocaleTimeString() + '<br>请点击右上角 X 关闭此提示</div>';
+    }
+    
+    console.log('[showHistoryModal] 函数被调用');
+    
     // 如果未登录，先显示登录界面
     if (!AppState.isLoggedIn) {
       showNotification('请先登录后再查看历史项目', 'warning');
