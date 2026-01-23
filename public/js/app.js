@@ -603,7 +603,13 @@ console.log(`[应用版本] ${APP_VERSION}`);
           showNotification('项目保存成功！', 'success');
         }
         
-        loadProjectList();
+        // 刷新项目列表（即使失败也要保证保存成功）
+        try {
+          await loadProjectList();
+        } catch (e) {
+          console.error('刷新项目列表失败（不影响保存）:', e);
+        }
+        
         return true;
       } else {
         showNotification(data.message || '保存失败', 'error');
