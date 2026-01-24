@@ -5177,7 +5177,9 @@ B1	800	1000	智幕Pro30"></textarea>
         
         // 显示导入模态框
         function showImportModal() {
-            document.getElementById('importModal').classList.remove('hidden');
+            const modal = document.getElementById('importModal');
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';  // 确保模态框可见
             document.getElementById('importTextarea').value = '';
             document.getElementById('importPreview').classList.add('hidden');
             document.getElementById('importAppendMode').checked = false;
@@ -5186,7 +5188,9 @@ B1	800	1000	智幕Pro30"></textarea>
         
         // 关闭导入模态框
         function closeImportModal() {
-            document.getElementById('importModal').classList.add('hidden');
+            const modal = document.getElementById('importModal');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';  // 确保模态框完全隐藏
         }
         
         // 下载Excel模板
@@ -5480,20 +5484,45 @@ B1	800	1000	智幕Pro30"></textarea>
                 reader.readAsText(file, 'UTF-8');
             } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
                 // Excel文件需要使用SheetJS库
-                alert('正在加载Excel解析库，请稍候...');
+                // 显示非阻塞的加载提示
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'excelLoading提示';
+                loadingDiv.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                         background: rgba(0,0,0,0.5); z-index: 9999; display: flex; 
+                         align-items: center; justify-content: center;">
+                        <div style="background: white; padding: 20px 40px; border-radius: 10px; 
+                             text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                                正在加载Excel解析库...
+                            </div>
+                            <div style="color: #666; font-size: 14px;">请稍候</div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(loadingDiv);
                 
                 // 动态加载SheetJS
                 if (typeof XLSX === 'undefined') {
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
                     script.onload = function() {
+                        // 移除加载提示
+                        const loadingEl = document.getElementById('excelLoading提示');
+                        if (loadingEl) loadingEl.remove();
                         processExcelFile(file);
                     };
                     script.onerror = function() {
+                        // 移除加载提示
+                        const loadingEl = document.getElementById('excelLoading提示');
+                        if (loadingEl) loadingEl.remove();
                         alert('Excel解析库加载失败，请尝试将Excel另存为CSV格式后导入。');
                     };
                     document.head.appendChild(script);
                 } else {
+                    // 移除加载提示
+                    const loadingEl = document.getElementById('excelLoading提示');
+                    if (loadingEl) loadingEl.remove();
                     processExcelFile(file);
                 }
             } else {
@@ -5518,10 +5547,17 @@ B1	800	1000	智幕Pro30"></textarea>
                     // 转换为CSV格式
                     const csv = XLSX.utils.sheet_to_csv(firstSheet, { FS: '\t' });
                     
+                    // 先设置数据，再显示模态框
                     document.getElementById('importTextarea').value = csv;
-                    showImportModal();
                     document.getElementById('importSkipHeader').checked = true;
-                    previewImportData();
+                    
+                    // 然后显示模态框并预览
+                    showImportModal();
+                    
+                    // 延迟一下再预览，确保UI更新完成
+                    setTimeout(function() {
+                        previewImportData();
+                    }, 100);
                 } catch (error) {
                     console.error('Excel解析错误:', error);
                     alert('Excel文件解析失败！\n\n请尝试将Excel另存为CSV格式后导入。');
