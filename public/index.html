@@ -5649,16 +5649,24 @@ B1	800	1000	智幕Pro30"></textarea>
         window.addEventListener('load', function() {
             // 延迟执行，确保DOM完全加载
             setTimeout(function() {
-                // 页面加载完成，先确保所有模态框默认隐藏
-                const modals = ['historyModal', 'saveModal', 'authModal', 'importModal', 'planModal', 'planSelectionModal'];
-                modals.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        // 确保模态框默认是隐藏的
-                        el.classList.add('hidden');
-                        el.style.display = 'none';
+                // 只在AppAuth加载失败时清理模态框状态
+                if (!window.AppAuth) {
+                    console.warn('AppAuth未加载，清理模态框状态');
+                    const modals = ['historyModal', 'saveModal', 'authModal', 'importModal', 'planModal', 'planSelectionModal'];
+                    modals.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.classList.add('hidden');
+                            el.style.display = 'none';
+                        }
+                    });
+                } else {
+                    // AppAuth已加载，确保authModal默认是隐藏的
+                    const authModal = document.getElementById('authModal');
+                    if (authModal && !authModal.classList.contains('hidden')) {
+                        // 如果authModal是打开的，保持打开状态（用户可能在使用）
                     }
-                });
+                }
             }, 100);
         });
     </script>
