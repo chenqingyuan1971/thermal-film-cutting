@@ -1,7 +1,7 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.22 - 修正关闭按钮提示文字
+ * 版本: 3.3.23 - 修复移动端模态框问题
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
@@ -207,6 +207,13 @@ console.log(`[应用版本] ${APP_VERSION}`);
       }
     } catch (error) {
       console.error('加载项目列表失败:', error);
+      
+      // 确保即使请求失败也关闭模态框
+      const historyModal = document.getElementById('historyModal');
+      if (historyModal) {
+        historyModal.classList.add('hidden');
+        historyModal.style.display = 'none';
+      }
       
       // 显示错误状态
       if (listContainer) {
@@ -884,13 +891,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // 显示历史记录模态框
   function showHistoryModal() {
-    // 在页面上显示调试信息
-    const debugInfo = document.getElementById('debugInfo');
-    if (debugInfo) {
-      debugInfo.innerHTML = '<div style="background:#ff0000;color:white;padding:10px;position:fixed;top:0;left:0;right:0;z-index:9999;font-size:14px;">⚠️ showHistoryModal 被调用！<br>时间：' + new Date().toLocaleTimeString() + '<br>请点击右上角 X 关闭此提示</div>';
-    }
-    
     console.log('[showHistoryModal] 函数被调用');
+    console.log('[showHistoryModal] 当前登录状态:', AppState.isLoggedIn);
     
     // 如果未登录，先显示登录界面
     if (!AppState.isLoggedIn) {
@@ -899,26 +901,43 @@ console.log(`[应用版本] ${APP_VERSION}`);
       return;
     }
     
-    closeAllModals(); // 先关闭其他弹窗
+    // 关闭其他所有模态框
+    closeAllModals();
+    
+    // 确保historyModal可见
     const modal = document.getElementById('historyModal');
     if (modal) {
       modal.classList.remove('hidden');
+      modal.style.display = 'flex'; // 确保使用flex布局
+      console.log('[showHistoryModal] 已打开历史记录模态框');
       loadProjectList();
+    } else {
+      console.error('[showHistoryModal] 找不到historyModal元素');
+    }
+  }
     }
   }
 
   // 显示保存模态框
   function showSaveModal() {
-    closeAllModals(); // 先关闭其他弹窗
+    console.log('[showSaveModal] 函数被调用');
+    console.log('[showSaveModal] 当前登录状态:', AppState.isLoggedIn);
+    
+    // 如果未登录，先显示登录界面
     if (!AppState.isLoggedIn) {
       showNotification('请先登录后再保存项目', 'warning');
       showAuthModal('login');
       return;
     }
     
+    // 关闭其他所有模态框
+    closeAllModals();
+    
     const modal = document.getElementById('saveModal');
     if (modal) {
       modal.classList.remove('hidden');
+      modal.style.display = 'flex'; // 确保使用flex布局
+      console.log('[showSaveModal] 已打开保存项目模态框');
       
       // 获取表单元素
       const projectNameInput = document.getElementById('projectName');
