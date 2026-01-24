@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.23 - 修复移动端模态框问题
+ * 版本: 3.3.24 - 修复移动端模态框问题，移除有问题的window.load脚本
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.22_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.24_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -855,11 +855,31 @@ console.log(`[应用版本] ${APP_VERSION}`);
     }
   }
 
+  // ==================== 模态框初始化函数 ====================
+  
+  // 初始化所有模态框为隐藏状态
+  function initAllModals() {
+    const modalIds = ['authModal', 'historyModal', 'saveModal', 'importModal', 'planModal', 'planSelectionModal'];
+    modalIds.forEach(id => {
+      const modal = document.getElementById(id);
+      if (modal) {
+        // 确保模态框初始化时是隐藏的
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+    });
+    console.log('[initAllModals] 所有模态框已初始化为隐藏状态');
+  }
+  
   // ==================== 模态框相关函数 ====================
 
   // 显示认证模态框
   function showAuthModal(tab = 'login') {
     console.log('[showAuthModal] 函数被调用, tab:', tab);
+    
+    // 首先确保其他模态框是关闭的
+    closeAllModals();
+    
     const modal = document.getElementById('authModal');
     if (modal) {
       modal.classList.remove('hidden');
@@ -1054,6 +1074,9 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // 页面加载完成后初始化
   document.addEventListener('DOMContentLoaded', function() {
+    // 首先初始化所有模态框为隐藏状态
+    initAllModals();
+    
     // 检查登录状态
     checkLoginStatus();
     
@@ -1243,6 +1266,7 @@ console.log(`[应用版本] ${APP_VERSION}`);
   window.closeAllModals = closeAllModals;
   window.retryLoadProjectList = retryLoadProjectList;
   
+  // 暴露AppAuth对象（供其他脚本调用）
   window.AppAuth = {
     checkLoginStatus,
     showAuthModal,
@@ -1254,7 +1278,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
     deleteProject,
     loadProject,
     closeAllModals,
-    retryLoadProjectList
+    retryLoadProjectList,
+    initAllModals  // 暴露初始化函数
   };
 
 })();
