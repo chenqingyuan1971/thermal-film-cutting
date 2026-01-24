@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.24 - 修复移动端模态框问题，移除有问题的window.load脚本
+ * 版本: 3.3.25 - 修复语法错误
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.24_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.25_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -938,8 +938,6 @@ console.log(`[应用版本] ${APP_VERSION}`);
       loadProjectList();
     } else {
       console.error('[showHistoryModal] 找不到historyModal元素');
-    }
-  }
     }
   }
 
