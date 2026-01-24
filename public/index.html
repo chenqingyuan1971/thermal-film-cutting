@@ -6,13 +6,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>玻璃隔热膜裁切优化系统 V3.3.23</title>
+    <title>玻璃隔热膜裁切优化系统 V3.3.24</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/js/app.js?v=3.3.23"></script>
+    <script src="/js/app.js?v=3.3.24"></script>
     <script>
         // 关闭历史记录弹窗的函数（在主JS加载后定义，确保按钮的onclick可以调用）
         window.forceCloseHistoryModal = function() {
@@ -5644,37 +5644,12 @@ B1	800	1000	智幕Pro30"></textarea>
                 }
             }, 100);
         }
-        
-        // 页面加载完成后再检查一次登录状态
-        window.addEventListener('load', function() {
-            // 延迟执行，确保DOM完全加载
-            setTimeout(function() {
-                // 只在AppAuth加载失败时清理模态框状态
-                if (!window.AppAuth) {
-                    console.warn('AppAuth未加载，清理模态框状态');
-                    const modals = ['historyModal', 'saveModal', 'authModal', 'importModal', 'planModal', 'planSelectionModal'];
-                    modals.forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) {
-                            el.classList.add('hidden');
-                            el.style.display = 'none';
-                        }
-                    });
-                } else {
-                    // AppAuth已加载，确保authModal默认是隐藏的
-                    const authModal = document.getElementById('authModal');
-                    if (authModal && !authModal.classList.contains('hidden')) {
-                        // 如果authModal是打开的，保持打开状态（用户可能在使用）
-                    }
-                }
-            }, 100);
-        });
     </script>
 
     <!-- ==================== 认证模态框 ==================== -->
     
-    <!-- 认证模态框（登录/注册） -->
-    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
+    <!-- 认证模态框（登录/注册） - 初始化时隐藏，通过JS控制显示 -->
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="display: none;">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] overflow-y-auto relative">
             <!-- 关闭按钮 -->
             <button id="authModalClose" class="absolute top-4 right-4 text-white hover:text-gray-200 z-20" onclick="document.getElementById('authModal').style.display='none';">
