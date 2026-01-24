@@ -6,13 +6,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>玻璃隔热膜裁切优化系统 V3.3.22</title>
+    <title>玻璃隔热膜裁切优化系统 V3.3.23</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/js/app.js?v=3.3.22"></script>
+    <script src="/js/app.js?v=3.3.23"></script>
     <script>
         // 关闭历史记录弹窗的函数（在主JS加载后定义，确保按钮的onclick可以调用）
         window.forceCloseHistoryModal = function() {
@@ -5630,10 +5630,37 @@ B1	800	1000	智幕Pro30"></textarea>
                     clearInterval(checkAuth);
                     if (window.AppAuth) {
                         initAuthBridge();
+                    } else {
+                        // AppAuth加载失败，移除所有可能打开的模态框
+                        const modals = ['historyModal', 'saveModal', 'authModal', 'importModal', 'planModal', 'planSelectionModal'];
+                        modals.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) {
+                                el.classList.add('hidden');
+                                el.style.display = 'none';
+                            }
+                        });
                     }
                 }
             }, 100);
         }
+        
+        // 页面加载完成后再检查一次登录状态
+        window.addEventListener('load', function() {
+            // 延迟执行，确保DOM完全加载
+            setTimeout(function() {
+                // 页面加载完成，先确保所有模态框默认隐藏
+                const modals = ['historyModal', 'saveModal', 'authModal', 'importModal', 'planModal', 'planSelectionModal'];
+                modals.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        // 确保模态框默认是隐藏的
+                        el.classList.add('hidden');
+                        el.style.display = 'none';
+                    }
+                });
+            }, 100);
+        });
     </script>
 
     <!-- ==================== 认证模态框 ==================== -->
