@@ -859,9 +859,12 @@ console.log(`[应用版本] ${APP_VERSION}`);
 
   // 显示认证模态框
   function showAuthModal(tab = 'login') {
+    console.log('[showAuthModal] 函数被调用, tab:', tab);
     const modal = document.getElementById('authModal');
     if (modal) {
       modal.classList.remove('hidden');
+      modal.style.display = 'flex'; // 确保使用flex布局
+      console.log('[showAuthModal] authModal已显示');
       
       // 切换到指定标签
       const loginTab = document.getElementById('loginTab');
@@ -886,6 +889,8 @@ console.log(`[应用版本] ${APP_VERSION}`);
         registerForm.classList.remove('hidden');
         loginForm.classList.add('hidden');
       }
+    } else {
+      console.error('[showAuthModal] 找不到authModal元素');
     }
   }
 
