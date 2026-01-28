@@ -1,11 +1,11 @@
 /**
  * 隔热膜智能裁剪系统 - 前端应用脚本
  * 包含用户认证、项目管理和数据操作功能
- * 版本: 3.3.27 - 修复导入功能问题
+ * 版本: 3.3.28 - 修复会话持久化问题
  */
 
 // 版本号和缓存破坏器 - 强制浏览器加载最新版本
-const APP_VERSION = 'v=3.3.27_' + new Date().getTime();
+const APP_VERSION = 'v=3.3.28_' + new Date().getTime();
 console.log(`[应用版本] ${APP_VERSION}`);
 
 (function() {
@@ -30,6 +30,14 @@ console.log(`[应用版本] ${APP_VERSION}`);
       const response = await fetch(`${API_BASE}/api/user/status`, {
         credentials: 'same-origin'
       });
+      
+      // 如果返回401，说明会话已失效
+      if (response.status === 401) {
+        console.log('[checkLoginStatus] 会话已失效，自动退出登录');
+        updateUIForLoggedOutUser();
+        return;
+      }
+      
       const data = await response.json();
       
       if (data.loggedIn) {
@@ -171,6 +179,23 @@ console.log(`[应用版本] ${APP_VERSION}`);
       clearTimeout(timeoutId);
       
       console.log('[loadProjectList] API响应原始数据:', response);
+      
+      // 处理401未授权错误 - 会话可能已失效
+      if (response.status === 401) {
+        console.log('[loadProjectList] 检测到401未授权，关闭历史记录模态框并显示登录窗口');
+        const historyModal = document.getElementById('historyModal');
+        if (historyModal) {
+          historyModal.classList.add('hidden');
+          historyModal.style.display = 'none';
+        }
+        // 同步服务器状态并显示登录窗口
+        AppState.isLoggedIn = false;
+        AppState.currentUser = null;
+        showAuthModal('login');
+        showNotification('登录已过期，请重新登录', 'warning');
+        return;
+      }
+      
       const data = await response.json();
       console.log('[loadProjectList] API响应解析后:', data);
       
