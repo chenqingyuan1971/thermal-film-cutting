@@ -15,6 +15,16 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = process.env.DB_NAME || 'insulation_cutting_system';
 
+// 从连接串里抽出主机名（去掉协议、账号密码、库名），仅用于日志显示
+function maskMongoHost(uri) {
+  try {
+    const m = String(uri).match(/^mongodb(?:\+srv)?:\/\/(?:[^@]*@)?([^/?]+)/);
+    return m ? m[1] : '(unparsable)';
+  } catch (e) {
+    return '(unparsable)';
+  }
+}
+
 let db;
 let usersCollection;
 let projectsCollection;
@@ -429,6 +439,7 @@ app.listen(PORT, HOST, () => {
 ╚═══════════════════════════════════════════════════════════╝
   `);
   console.log(`[${new Date().toISOString()}] Server started on port ${PORT}`);
-  console.log(`[${new Date().toISOString()}] MongoDB URI: ${MONGODB_URI}`);
+  // 🔴 安全：只打印主机名，绝不打印含账号密码的完整连接串（曾明文进日志导致凭据泄露）
+  console.log(`[${new Date().toISOString()}] MongoDB host: ${maskMongoHost(MONGODB_URI)}`);
   console.log(`[${new Date().toISOString()}] Database name: ${DB_NAME}`);
 });

@@ -1,0 +1,8 @@
+node_modules/
+# 本地 SQLite 旧数据（含账号信息，禁入 git）
+data/
+# 日志与临时产物
+*.log
+*.bak_*
+.DS_Store
+.env
